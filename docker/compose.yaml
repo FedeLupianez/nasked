@@ -1,0 +1,21 @@
+services:
+  mariadb:
+    image: mariadb:latest
+    container_name: nasked-mariadb
+
+    restart: unless-stopped
+
+    environment:
+      MARIADB_ROOT_PASSWORD: root
+      MARIADB_DATABASE: nasked
+      MARIADB_USER: nasked
+      MARIADB_PASSWORD: nasked
+
+    ports:
+      - "3308:3306"
+
+    volumes:
+      - mariadb_data:/var/lib/mysql
+
+volumes:
+  mariadb_data:

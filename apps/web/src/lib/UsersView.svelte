@@ -1,10 +1,11 @@
 <script lang="ts">
   import { store } from './store.svelte';
   import { initials } from './utils';
+  import { Users, KeyRound, User } from 'lucide-svelte';
 </script>
 
 <div class="panel">
-  <h3>👥 Usuarios y miembros por carpeta</h3>
+  <h3 class="with-icon"><Users size={16} /> Usuarios y miembros por carpeta</h3>
   <p class="muted">Solo visible para ADMIN. Los USER se agregan solos con el código de cada carpeta.</p>
 </div>
 <div style="height:12px"></div>
@@ -28,8 +29,8 @@
     <div style="display:flex;gap:8px;align-items:center">
       <span class="folder-dot" style="background:{f.color}"></span>
       <b>{f.name}</b>
-      <span class="folder-code">🔑 {f.code}</span>
-      <span class="muted" style="font-size:12px">· {f.memberIds.length} miembros · {f.cards.length} tarjetas</span>
+      <span class="folder-code with-icon"><KeyRound size={12} /> {f.code}</span>
+      <span class="muted with-icon" style="font-size:12px">· {f.memberIds.length} miembros · {f.cards.length} tarjetas</span>
     </div>
     {#if !f.memberIds.length}
       <p class="muted" style="margin:8px 0 0">Sin miembros aún. Comparte el código <code>{f.code}</code>.</p>
@@ -38,7 +39,7 @@
         {#each f.memberIds as mid}
           {@const u = store.users.find((x) => x.id === mid)}
           {#if u}
-            <span class="folder-code">👤 {u.name} ({u.email})</span>
+            <span class="folder-code with-icon"><User size={12} /> {u.name} ({u.email})</span>
           {/if}
         {/each}
       </div>

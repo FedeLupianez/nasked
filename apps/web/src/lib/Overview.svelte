@@ -1,6 +1,7 @@
 <script lang="ts">
   import { store } from './store.svelte';
   import { getDueInfo } from './utils';
+  import { Folder, Layers, Flame, Ban, Plus, UserPlus, KeyRound, Users } from 'lucide-svelte';
 
   let q = $derived(store.search.toLowerCase());
   let folders = $derived(
@@ -23,19 +24,19 @@
 </script>
 
 <div class="stats">
-  <div class="stat"><small>📁 Carpetas {store.isAdmin ? 'totales' : 'unidas'}</small><b>{store.visibleFolders.length}</b></div>
-  <div class="stat"><small>🃏 Tarjetas activas</small><b>{totalCards}</b></div>
-  <div class="stat"><small>🔥 Vencen en &lt;24h</small><b>{urgent}</b></div>
-  <div class="stat"><small>⛔ Vencidas</small><b>{overdue}</b></div>
+  <div class="stat"><small class="with-icon"><Folder size={13} /> Carpetas {store.isAdmin ? 'totales' : 'unidas'}</small><b>{store.visibleFolders.length}</b></div>
+  <div class="stat"><small class="with-icon"><Layers size={13} /> Tarjetas activas</small><b>{totalCards}</b></div>
+  <div class="stat"><small class="with-icon"><Flame size={13} /> Vencen en &lt;24h</small><b>{urgent}</b></div>
+  <div class="stat"><small class="with-icon"><Ban size={13} /> Vencidas</small><b>{overdue}</b></div>
 </div>
 
 <div class="toolbar">
   <h3 style="margin:0">{store.isAdmin ? 'Todas las carpetas' : 'Mis carpetas'}</h3>
   <span class="spacer"></span>
   {#if store.isAdmin}
-    <button class="btn btn-primary btn-small" onclick={() => (store.view = 'folders')}>+ Nueva carpeta</button>
+    <button class="btn btn-primary btn-small with-icon" onclick={() => (store.view = 'folders')}><Plus size={14} /> Nueva carpeta</button>
   {:else}
-    <button class="btn btn-primary btn-small" onclick={() => (store.view = 'join')}>➕ Unirse con código</button>
+    <button class="btn btn-primary btn-small with-icon" onclick={() => (store.view = 'join')}><UserPlus size={14} /> Unirse con código</button>
   {/if}
 </div>
 
@@ -60,8 +61,8 @@
         </div>
         <p class="muted" style="margin:8px 0">{f.description || 'Sin descripción'}</p>
         <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-          <span class="folder-code">🔑 {f.code}</span>
-          <span class="muted" style="font-size:12px">🃏 {f.cards.length} · 👥 {f.memberIds.length}</span>
+          <span class="folder-code with-icon"><KeyRound size={12} /> {f.code}</span>
+          <span class="muted with-icon" style="font-size:12px"><Layers size={12} /> {f.cards.length} · <Users size={12} /> {f.memberIds.length}</span>
         </div>
       </div>
     {/each}

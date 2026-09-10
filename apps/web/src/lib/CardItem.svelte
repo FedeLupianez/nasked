@@ -3,6 +3,7 @@
   import type { CardItem } from './types';
   import { getDueInfo, formatDateTime, FIELD_TYPE_LABEL } from './utils';
   import { store } from './store.svelte';
+  import { Trash2, Timer } from 'lucide-svelte';
 
   let { card, folderId }: { card: CardItem; folderId: string } = $props();
   let now = $state(Date.now());
@@ -32,12 +33,12 @@
       {#if card.description}<div class="muted" style="font-size:13px;margin-top:2px">{card.description}</div>{/if}
     </div>
     {#if store.isAdmin}
-      <button class="btn btn-danger btn-small" onclick={del} title="Eliminar">✕</button>
+      <button class="btn btn-danger btn-small icon-btn" onclick={del} title="Eliminar"><Trash2 size={14} /></button>
     {/if}
   </div>
 
   <div class="due {due.status}" title={new Date(card.dueDate).toLocaleString()}>
-    ⏳ {due.label} · vence {formatDateTime(card.dueDate)}
+    <Timer size={13} /> {due.label} · vence {formatDateTime(card.dueDate)}
   </div>
 
   {#if card.fields.length}

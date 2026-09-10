@@ -2,6 +2,7 @@
   import type { FieldType } from './types';
   import { uid } from './utils';
   import { store } from './store.svelte';
+  import { Plus, X } from 'lucide-svelte';
 
   let { folderId, onclose }: { folderId: string; onclose: () => void } = $props();
 
@@ -54,7 +55,7 @@
       <div style="margin-top:14px;display:flex;align-items:center;gap:8px">
         <b style="font-size:13px">Campos personalizados ({fields.length}) — infinitos</b>
         <span style="flex:1"></span>
-        <button type="button" class="btn btn-ghost btn-small" onclick={addField}>+ Agregar campo</button>
+        <button type="button" class="btn btn-ghost btn-small with-icon" onclick={addField}><Plus size={13} /> Agregar campo</button>
       </div>
 
       {#each fields as f}
@@ -81,7 +82,7 @@
               <input bind:value={f.value} placeholder="Texto…" />
             {/if}
           </div>
-          <button type="button" class="btn btn-danger btn-small" onclick={() => removeField(f.id)} title="Quitar">✕</button>
+          <button type="button" class="btn btn-danger btn-small icon-btn" onclick={() => removeField(f.id)} title="Quitar"><X size={14} /></button>
         </div>
       {/each}
 

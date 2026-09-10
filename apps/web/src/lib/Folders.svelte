@@ -1,6 +1,7 @@
 <script lang="ts">
   import { store } from './store.svelte';
   import { FOLDER_COLORS } from './utils';
+  import { Plus, Folder, UserPlus, KeyRound, Layers, Users, Trash2, LogOut } from 'lucide-svelte';
 
   let name = $state('');
   let description = $state('');
@@ -26,7 +27,7 @@
 <div class="grid" style="grid-template-columns: 340px 1fr; align-items:start">
   {#if store.isAdmin}
     <form class="panel" onsubmit={create}>
-      <h3>＋ Nueva carpeta</h3>
+      <h3 class="with-icon"><Plus size={15} /> Nueva carpeta</h3>
       <p class="muted">Solo ADMIN. Se genera un código para que los USER se unan.</p>
       <div class="field"><label>Nombre *</label><input bind:value={name} placeholder="Ej: Historia 2026" /></div>
       <div class="field"><label>Descripción</label><textarea bind:value={description} rows="2" placeholder="¿Para qué es este espacio?"></textarea></div>
@@ -43,9 +44,9 @@
     </form>
   {:else}
     <div class="panel">
-      <h3>📁 {store.visibleFolders.length} carpetas unidas</h3>
+      <h3 class="with-icon"><Folder size={15} /> {store.visibleFolders.length} carpetas unidas</h3>
       <p class="muted">Como USER solo ves las carpetas a las que te uniste. Para entrar a otra necesitas su código.</p>
-      <button class="btn btn-primary" style="width:100%" onclick={() => (store.view = 'join')}>➕ Unirse con código</button>
+      <button class="btn btn-primary with-icon" style="width:100%" onclick={() => (store.view = 'join')}><UserPlus size={15} /> Unirse con código</button>
     </div>
   {/if}
 
@@ -59,20 +60,20 @@
             <span class="folder-dot" style="background:{f.color}"></span>
             <b>{f.name}</b>
             <span style="flex:1"></span>
-            <span class="folder-code">🔑 {f.code}</span>
+            <span class="folder-code with-icon"><KeyRound size={12} /> {f.code}</span>
             {#if store.isAdmin}
               <button
-                class="btn btn-danger btn-small"
+                class="btn btn-danger btn-small with-icon"
                 onclick={(e) => { e.stopPropagation(); if (confirm(`¿Eliminar "${f.name}"?`)) store.deleteFolder(f.id); }}
-              >Eliminar</button>
+              ><Trash2 size={13} /> Eliminar</button>
             {:else}
               <button
-                class="btn btn-ghost btn-small"
+                class="btn btn-ghost btn-small with-icon"
                 onclick={(e) => { e.stopPropagation(); if (confirm(`¿Salir de "${f.name}"?`)) store.leaveFolder(f.id); }}
-              >Salir</button>
+              ><LogOut size={13} /> Salir</button>
             {/if}
           </div>
-          <p class="muted" style="margin:8px 0 0">{f.description} · 🃏 {f.cards.length} tarjetas · 👥 {f.memberIds.length} miembros</p>
+          <p class="muted with-icon" style="margin:8px 0 0">{f.description} · <Layers size={12} /> {f.cards.length} tarjetas · <Users size={12} /> {f.memberIds.length} miembros</p>
         </div>
       {/each}
     {/if}

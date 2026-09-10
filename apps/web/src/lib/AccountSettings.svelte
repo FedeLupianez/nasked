@@ -1,6 +1,7 @@
 <script lang="ts">
   import { store } from './store.svelte';
   import { initials } from './utils';
+  import { Settings, Folder, LogOut } from 'lucide-svelte';
 
   let name = $state(store.currentUser?.name ?? '');
   let email = $state(store.currentUser?.email ?? '');
@@ -22,7 +23,7 @@
     const err = store.updateAccount(name, email, newPassword);
     if (err) error = err;
     else {
-      ok = 'Cuenta actualizada correctamente ✓';
+      ok = 'Cuenta actualizada correctamente';
       newPassword = '';
     }
   }
@@ -46,7 +47,7 @@
   </div>
 
   <form class="panel" onsubmit={save}>
-    <h3>⚙️ Config de cuenta</h3>
+    <h3 class="with-icon"><Settings size={15} /> Config de cuenta</h3>
     <p class="muted">Disponible para USER y ADMIN. Cambia tu nombre y email demo.</p>
     <div class="field"><label>Nombre</label><input bind:value={name} required /></div>
     <div class="field"><label>Email</label><input bind:value={email} type="email" required /></div>
@@ -58,13 +59,13 @@
     {#if ok}<div class="error" style="margin-top:10px;background:rgba(16,185,129,.12);border-color:rgba(16,185,129,.4);color:#6ee7b7">{ok}</div>{/if}
     <div class="row" style="margin-top:12px">
       <button class="btn btn-primary" type="submit">Guardar cambios</button>
-      <button class="btn btn-ghost" type="button" onclick={() => store.logout()}>Cerrar sesión</button>
+      <button class="btn btn-ghost with-icon" type="button" onclick={() => store.logout()}><LogOut size={14} /> Cerrar sesión</button>
     </div>
   </form>
 
   {#if store.currentUser?.role === 'USER'}
     <div class="panel">
-      <h3>📁 Mis carpetas ({store.visibleFolders.length})</h3>
+      <h3 class="with-icon"><Folder size={15} /> Mis carpetas ({store.visibleFolders.length})</h3>
       {#if !store.visibleFolders.length}
         <p class="muted">No estás en ninguna carpeta. <button class="btn btn-ghost btn-small" onclick={() => (store.view = 'join')}>Unirme con código</button></p>
       {:else}

@@ -17,7 +17,7 @@
 <div class="login-wrap">
   <div class="login-card">
     <div class="login-hero">
-      <div class="brand-mark">N</div>
+      <img class="brand-logo hero-logo" src="/NaskedLogo.png" alt="Nasked logo" />
       <h1>Nasked Boards</h1>
       <p class="slogan">“Todo a tiempo, todo en orden.”</p>
       <p class="tagline">Tu espacio para organizar actividades y cumplir cada vencimiento sin estrés.</p>

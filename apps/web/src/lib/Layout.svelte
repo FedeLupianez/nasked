@@ -1,42 +1,77 @@
 <script lang="ts">
-  import type { Snippet } from 'svelte';
-  import { store } from './store.svelte';
-  import { initials } from './utils';
+  import type { Snippet } from "svelte";
+  import { store } from "./store.svelte";
+  import { initials } from "./utils";
+  import {
+    House,
+    Folder,
+    UserPlus,
+    Settings,
+    Users,
+    FolderOpen,
+    LogOut,
+    RotateCcw,
+  } from "lucide-svelte";
 
   let { children }: { children?: Snippet } = $props();
 
   const navUser = [
-    { id: 'overview', label: '🏠 Resumen', desc: 'Vista general' },
-    { id: 'folders', label: '📁 Mis carpetas', desc: 'Espacios unidos' },
-    { id: 'join', label: '➕ Unirse a carpeta', desc: 'Usar código' },
-    { id: 'account', label: '⚙️ Config de cuenta', desc: 'Perfil' }
+    { id: "overview", label: "Resumen", icon: House, desc: "Vista general" },
+    {
+      id: "folders",
+      label: "Mis carpetas",
+      icon: Folder,
+      desc: "Espacios unidos",
+    },
+    {
+      id: "join",
+      label: "Unirse a carpeta",
+      icon: UserPlus,
+      desc: "Usar código",
+    },
+    {
+      id: "account",
+      label: "Config de cuenta",
+      icon: Settings,
+      desc: "Perfil",
+    },
   ];
   const navAdmin = [
-    { id: 'overview', label: '🏠 Dashboard', desc: 'Vista general' },
-    { id: 'folders', label: '📁 Carpetas', desc: 'Todas' },
-    { id: 'join', label: '➕ Unirse con código', desc: 'Entrar a otra' },
-    { id: 'users', label: '👥 Usuarios', desc: 'Miembros' },
-    { id: 'account', label: '⚙️ Config de cuenta', desc: 'Perfil' }
+    { id: "overview", label: "Dashboard", icon: House, desc: "Vista general" },
+    { id: "folders", label: "Carpetas", icon: Folder, desc: "Todas" },
+    {
+      id: "join",
+      label: "Unirse con código",
+      icon: UserPlus,
+      desc: "Entrar a otra",
+    },
+    { id: "users", label: "Usuarios", icon: Users, desc: "Miembros" },
+    {
+      id: "account",
+      label: "Config de cuenta",
+      icon: Settings,
+      desc: "Perfil",
+    },
   ];
 
   let items = $derived(store.isAdmin ? navAdmin : navUser);
   let titles: Record<string, string> = {
-    overview: 'Resumen',
-    folders: store.isAdmin ? 'Carpetas' : 'Mis carpetas',
-    'folder-detail': store.selectedFolder?.name ?? 'Carpeta',
-    join: 'Unirse a una carpeta',
-    account: 'Configuración de cuenta',
-    users: 'Usuarios y miembros'
+    overview: "Resumen",
+    folders: store.isAdmin ? "Carpetas" : "Mis carpetas",
+    "folder-detail": store.selectedFolder?.name ?? "Carpeta",
+    join: "Unirse a una carpeta",
+    account: "Configuración de cuenta",
+    users: "Usuarios y miembros",
   };
 </script>
 
 <div class="shell">
   <aside class="sidebar">
     <div class="brand">
-      <div class="brand-mark">N</div>
+      <img class="brand-logo" src="/NaskedLogo.png" alt="Nasked logo" />
       <div>
-        <b>Nasked Boards</b>
-        <small>dashboard · svelte</small>
+        <b>Nasked</b>
+        <small>dashboard</small>
       </div>
     </div>
 
@@ -44,18 +79,25 @@
       {#each items as it}
         <button
           class:active={store.view === it.id}
-          onclick={() => { store.view = it.id; if (it.id !== 'folder-detail') store.selectedFolderId = it.id === 'folders' ? store.selectedFolderId : store.selectedFolderId; }}
+          onclick={() => {
+            store.view = it.id;
+          }}
           title={it.desc}
         >
+          <it.icon size={16} />
           <span>{it.label}</span>
         </button>
       {/each}
       {#if store.selectedFolder}
         <button
-          class:active={store.view === 'folder-detail'}
-          onclick={() => (store.view = 'folder-detail')}
+          class:active={store.view === "folder-detail"}
+          onclick={() => (store.view = "folder-detail")}
         >
-          <span>📂 {store.selectedFolder.name}</span>
+          <FolderOpen size={16} />
+          <span
+            style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis"
+            >{store.selectedFolder.name}</span
+          >
         </button>
       {/if}
     </nav>
@@ -66,22 +108,43 @@
           {initials(store.currentUser.name)}
         </div>
         <div style="min-width:0">
-          <b style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{store.currentUser.name}</b>
+          <b style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis"
+            >{store.currentUser.name}</b
+          >
           <small>{store.currentUser.email}</small><br />
-          <span class="role-pill {store.currentUser.role === 'USER' ? 'user' : ''}">{store.currentUser.role}</span>
+          <span
+            class="role-pill {store.currentUser.role === 'USER' ? 'user' : ''}"
+            >{store.currentUser.role}</span
+          >
         </div>
-        <button class="btn btn-ghost btn-small" style="margin-left:auto" onclick={() => store.logout()} title="Salir">↩</button>
+        <button
+          class="btn btn-ghost btn-small icon-btn"
+          style="margin-left:auto"
+          onclick={() => store.logout()}
+          title="Salir"
+        >
+          <LogOut size={15} />
+        </button>
       {/if}
     </div>
   </aside>
 
   <div class="main">
     <div class="topbar">
-      <h1>{titles[store.view] ?? 'Dashboard'}</h1>
-      {#if store.view === 'folders' || store.view === 'overview'}
-        <input class="search" placeholder="🔍 Buscar carpetas o tarjetas…" bind:value={store.search} />
+      <h1>{titles[store.view] ?? "Dashboard"}</h1>
+      {#if store.view === "folders" || store.view === "overview"}
+        <input
+          class="search"
+          placeholder="Buscar carpetas o tarjetas…"
+          bind:value={store.search}
+        />
       {/if}
-      <button class="btn btn-ghost btn-small" onclick={() => store.resetDemo()}>⟲ Reset demo</button>
+      <button
+        class="btn btn-ghost btn-small with-icon"
+        onclick={() => store.resetDemo()}
+      >
+        <RotateCcw size={14} /> Reset demo
+      </button>
     </div>
     <div class="content">
       {@render children?.()}

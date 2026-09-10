@@ -3,6 +3,18 @@
   import CardItem from './CardItem.svelte';
   import CardForm from './CardForm.svelte';
   import { getDueInfo } from './utils';
+  import {
+    FolderOpen,
+    Users,
+    KeyRound,
+    ArrowLeft,
+    Plus,
+    LogOut,
+    CircleCheck,
+    Clock,
+    Flame,
+    Ban
+  } from 'lucide-svelte';
 
   let showForm = $state(false);
   let sort: 'due' | 'recent' = $state('due');
@@ -32,31 +44,31 @@
   <div class="panel">
     <h3>Selecciona una carpeta</h3>
     <p class="muted">Ve a Mis carpetas y abre una para ver sus tarjetas.</p>
-    <button class="btn btn-ghost" onclick={() => (store.view = 'folders')}>← Ver carpetas</button>
+    <button class="btn btn-ghost with-icon" onclick={() => (store.view = 'folders')}><ArrowLeft size={15} /> Ver carpetas</button>
   </div>
 {:else}
   <div class="panel" style="border-left: 4px solid {folder.color}">
     <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
       <div style="flex:1;min-width:200px">
-        <h3 style="font-size:18px">📂 {folder.name}</h3>
-        <p class="muted">{folder.description} · 👥 {folder.memberIds.length} miembros</p>
+        <h3 class="with-icon" style="font-size:18px"><FolderOpen size={18} /> {folder.name}</h3>
+        <p class="muted with-icon">{folder.description} · <Users size={12} /> {folder.memberIds.length} miembros</p>
       </div>
-      <span class="folder-code">🔑 {folder.code}</span>
-      <select bind:value={sort} style="background:#10142a;border:1px solid var(--border);color:var(--text);border-radius:8px;padding:8px">
+      <span class="folder-code with-icon"><KeyRound size={12} /> {folder.code}</span>
+      <select bind:value={sort} style="background:#0a0a0a;border:1px solid var(--border);color:var(--text);border-radius:8px;padding:8px">
         <option value="due">Orden: vencimiento</option>
         <option value="recent">Orden: recientes</option>
       </select>
       {#if store.isAdmin}
-        <button class="btn btn-primary btn-small" onclick={() => (showForm = true)}>+ Nueva tarjeta</button>
+        <button class="btn btn-primary btn-small with-icon" onclick={() => (showForm = true)}><Plus size={14} /> Nueva tarjeta</button>
       {:else}
-        <button class="btn btn-ghost btn-small" onclick={() => store.leaveFolder(folder.id)}>Salir de la carpeta</button>
+        <button class="btn btn-ghost btn-small with-icon" onclick={() => store.leaveFolder(folder.id)}><LogOut size={13} /> Salir de la carpeta</button>
       {/if}
     </div>
     <div class="stats" style="margin-bottom:0">
-      <div class="stat"><small>✅ En tiempo</small><b>{stats.ok}</b></div>
-      <div class="stat"><small>🟡 Pronto (&lt;72h)</small><b>{stats.soon}</b></div>
-      <div class="stat"><small>🔥 Urgente (&lt;24h)</small><b>{stats.urgent}</b></div>
-      <div class="stat"><small>⛔ Vencidas</small><b>{stats.overdue}</b></div>
+      <div class="stat"><small class="with-icon"><CircleCheck size={13} /> En tiempo</small><b>{stats.ok}</b></div>
+      <div class="stat"><small class="with-icon"><Clock size={13} /> Pronto (&lt;72h)</small><b>{stats.soon}</b></div>
+      <div class="stat"><small class="with-icon"><Flame size={13} /> Urgente (&lt;24h)</small><b>{stats.urgent}</b></div>
+      <div class="stat"><small class="with-icon"><Ban size={13} /> Vencidas</small><b>{stats.overdue}</b></div>
     </div>
   </div>
 

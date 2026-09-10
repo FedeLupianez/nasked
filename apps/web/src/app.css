@@ -108,11 +108,20 @@ button { font-family: inherit; }
   position: sticky; top: 0; height: 100vh;
 }
 .brand { display: flex; align-items: center; gap: 10px; padding: 4px 8px; }
-.brand-mark {
-  width: 36px; height: 36px; border-radius: 10px;
-  background: #f5f5f5;
-  color: #090909;
-  display: grid; place-items: center; font-weight: 800;
+.brand-logo {
+  height: 34px; width: auto; max-width: 150px;
+  object-fit: contain;
+  display: block;
+  background: #fff;
+  border-radius: 8px;
+  padding: 4px 10px;
+  flex-shrink: 0;
+}
+.hero-logo {
+  height: 58px; max-width: 230px;
+  align-self: flex-start;
+  border-radius: 10px;
+  padding: 6px 14px;
 }
 .brand b { font-size: 15px; display: block; }
 .brand small { color: var(--muted); font-size: 11px; }
@@ -199,6 +208,10 @@ button { font-family: inherit; }
 
 .toolbar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin: 12px 0 16px; }
 .toolbar .spacer { flex: 1; }
+.with-icon { display: inline-flex; align-items: center; gap: 6px; }
+button.with-icon { display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+.icon-btn { display: inline-flex; align-items: center; justify-content: center; }
+.nav button svg, .btn svg, h3 svg, small svg { flex-shrink: 0; }
 .modal-back {
   position: fixed; inset: 0; background: rgba(0,0,0,.7);
   display: grid; place-items: center; padding: 20px; z-index: 20;

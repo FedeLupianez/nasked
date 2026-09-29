@@ -18,3 +18,18 @@ docker compose -f docker/compose.yaml --env-file .env \
 docker compose -f docker/compose.yaml --env-file .env \
   --profile api up --build
 ```
+
+# 4) Solo MariaDB
+```bash
+docker compose -f docker/compose.yaml --env-file .env --profile db up -d
+```
+
+## Bajar el contenedor, conserva el volumen de datos
+```bash
+docker compose -f docker/compose.yaml --env-file .env --profile db down
+```
+
+## Bajar el contenedor y borra los datos (fresh la próxima vez)
+```bash
+docker compose -f docker/compose.yaml --env-file .env --profile db down -v
+

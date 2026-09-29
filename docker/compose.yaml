@@ -1,21 +1,72 @@
+# Uso:  docker compose -f docker/compose.yaml --env-file .env <comando>
+name: nasked
+
 services:
+  # ---------------------------------------------------------------- services
+  # Levantar todo:            docker compose --profile db --profile api --profile web up
+  # Sólo frontend:            docker compose --profile web up web
+  # Sólo backend + MariaDB:   docker compose --profile api up
+
   mariadb:
-    image: mariadb:latest
+    image: mariadb:11
     container_name: nasked-mariadb
-
     restart: unless-stopped
-
+    profiles: [db, api]
     environment:
       MARIADB_ROOT_PASSWORD: root
-      MARIADB_DATABASE: nasked
-      MARIADB_USER: nasked
-      MARIADB_PASSWORD: nasked
-
+      MARIADB_DATABASE: ${DB_DATABASE:-nasked}
+      MARIADB_USER: ${DB_USERNAME:-nasked}
+      MARIADB_PASSWORD: ${DB_PASSWORD:-nasked}
     ports:
-      - "3308:3306"
-
+      - "${DB_PORT:-3308}:3306"
     volumes:
       - mariadb_data:/var/lib/mysql
+    healthcheck:
+      test:
+        ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  api:
+    container_name: nasked-api
+    restart: unless-stopped
+    profiles: [api]
+    env_file:
+      - ../.env
+    build:
+      context: ..
+      dockerfile: docker/api.Dockerfile
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      DB_HOST: mariadb
+      DB_PORT: 3306
+      DB_USERNAME: ${DB_USERNAME:-nasked}
+      DB_PASSWORD: ${DB_PASSWORD:-nasked}
+      DB_DATABASE: ${DB_DATABASE:-nasked}
+    depends_on:
+      mariadb:
+        condition: service_healthy
+    ports:
+      - "3000:3000"
+
+  web:
+    container_name: nasked-web
+    restart: unless-stopped
+    profiles: [web]
+    build:
+      context: ..
+      dockerfile: docker/web.Dockerfile
+      args:
+        # sólo web -> nginx sin proxy /api
+        NGINX_CONF: ${NGINX_CONF:-docker/nginx.conf}
+    depends_on:
+      api:
+        condition: service_started
+        required: false
+    ports:
+      - "5173:80"
 
 volumes:
   mariadb_data:

@@ -1,5 +1,6 @@
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { BeforeInsert, Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { AccountsCompanies } from "./accounts-companies.entity";
+import { hash } from "argon2";
 
 @Entity('Nasked_Accounts')
 export class Accounts {
@@ -26,5 +27,16 @@ export class Accounts {
 
   @Column({ type: 'boolean', default: true })
   active: boolean;
+
+  @BeforeInsert()
+  async hashPasswd() {
+    this.password = await hash(this.password, { secret: Buffer.from(process.env.ARGON_SECRET) })
+  }
+
+  @BeforeInsert()
+  defaultImage() {
+    if (!this.profile_image)
+      this.profile_image = `https://ui-avatars.com/api/?name=${this.name}+${this.lastname}&background=0D8ABC&color=fff&size=128`
+  }
 
 }

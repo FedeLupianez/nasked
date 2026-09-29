@@ -1,6 +1,11 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { AccountsModule } from '../accounts/accounts.module';
+import { AccessModule } from '../access/access.module';
+import { BusinessModule } from '../business/business.module';
+import { CompaniesModule } from '../companies/companies.module';
+import { ElementsModule } from '../elements/elements.module';
 
 @Module({
   imports: [
@@ -20,6 +25,11 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 
       synchronize: false,
     }),
+    AccountsModule,
+    AccessModule,
+    BusinessModule,
+    CompaniesModule,
+    ElementsModule
   ],
 })
 export class AppModule { }

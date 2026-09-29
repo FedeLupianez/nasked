@@ -7,6 +7,7 @@ import { BusinessModule } from '../business/business.module';
 import { CompaniesModule } from '../companies/companies.module';
 import { ElementsModule } from '../elements/elements.module';
 import { AuthModule } from '../auth/auth.module';
+import { dataSourceOptions } from '../database/data-source';
 
 @Module({
   imports: [
@@ -15,16 +16,8 @@ import { AuthModule } from '../auth/auth.module';
     }),
 
     TypeOrmModule.forRoot({
-      type: 'mariadb',
-      host: process.env.DB_HOST,
-      port: Number(process.env.DB_PORT),
-      username: process.env.DB_USERNAME,
-      password: process.env.DB_PASSWORD,
-      database: process.env.DB_DATABASE,
-
+      ...dataSourceOptions,
       autoLoadEntities: true,
-
-      synchronize: false,
     }),
     AccountsModule,
     AccessModule,

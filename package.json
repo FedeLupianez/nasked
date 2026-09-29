@@ -2,7 +2,14 @@
   "name": "@nasked/source",
   "version": "0.0.0",
   "license": "MIT",
-  "scripts": {},
+  "scripts": {
+    "typeorm": "cross-env TS_NODE_PROJECT=apps/api/tsconfig.app.json typeorm-ts-node-commonjs -d apps/api/src/database/data-source.ts",
+    "migration:show": "npm run typeorm -- migration:show",
+    "migration:generate": "npm run typeorm -- migration:generate",
+    "migration:create": "npm run typeorm -- migration:create",
+    "migration:run": "npm run typeorm -- migration:run",
+    "migration:revert": "npm run typeorm -- migration:revert"
+  },
   "private": true,
   "dependencies": {
     "@nestjs/common": "^11.0.0",
@@ -10,7 +17,9 @@
     "@nestjs/core": "^11.0.0",
     "@nestjs/platform-express": "^11.0.0",
     "@nestjs/typeorm": "^12.0.1",
+    "argon2": "^0.45.1",
     "axios": "^1.6.0",
+    "class-validator": "^0.15.1",
     "lucide-svelte": "^1.0.1",
     "mysql2": "^3.24.4",
     "reflect-metadata": "^0.2.0",
@@ -35,6 +44,7 @@
     "@vitest/coverage-v8": "~4.1.0",
     "jiti": "2.4.2",
     "nx": "23.2.1",
+    "ts-node": "^10.9.2",
     "tslib": "^2.3.0",
     "typescript": "~6.0.3",
     "vite": "^8.0.0",

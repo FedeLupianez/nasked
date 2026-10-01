@@ -14,6 +14,7 @@ import { Cards } from '../elements/cards.entity';
 import { Fields } from '../elements/fields.entity';
 import { FieldsValues } from '../elements/fieldsValues.entity';
 import { Folders } from '../elements/folders.entity';
+import { RefreshTokens } from '../auth/refreshTokens.entity';
 import { loadRootEnv } from '../config/env';
 
 loadRootEnv();
@@ -39,6 +40,7 @@ export const dataSourceOptions: DataSourceOptions = {
     Fields,
     FieldsValues,
     Folders,
+    RefreshTokens,
   ],
   migrations: [__dirname + '/migrations/*.{ts,js}'],
   synchronize: false,

@@ -1,11 +1,13 @@
-import { BeforeInsert, Column, Entity, Index, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { BeforeInsert, Column, Entity, Index, OneToMany, PrimaryColumn } from "typeorm";
 import { AccountsCompanies } from "./accounts-companies.entity";
 import { hash } from "argon2";
+import { parse } from "uuid";
+import { v7 as uuidv7 } from 'uuid';
 
 @Entity('Nasked_Accounts')
 export class Accounts {
-  @PrimaryGeneratedColumn({ type: 'int', unsigned: true })
-  id_account: number;
+  @PrimaryColumn({ type: 'binary', length: 16 })
+  id_account = Buffer.from(parse(uuidv7()));
 
   @Column({ type: 'varchar', length: 255, nullable: false })
   name: string;

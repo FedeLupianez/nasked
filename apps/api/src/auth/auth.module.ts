@@ -15,7 +15,7 @@ import { RefreshTokens } from './refreshTokens.entity';
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({
-        secret: config.getOrThrow<string>('JWT_SECRET'),
+        secret: config.get<string>('JWT_ACCESS_SECRET') ?? config.getOrThrow<string>('JWT_SECRET'),
       }),
     }),
     TypeOrmModule.forFeature([RefreshTokens])

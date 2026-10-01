@@ -10,4 +10,4 @@ export interface SessionDTO extends Profile {
   tokens: Tokens;
 }
 
-export type PublicSession = Omit<SessionDTO, 'refreshToken'>;
+export type PublicSession = Omit<SessionDTO, 'tokens'> & { access: SessionDTO['tokens']['access'] }

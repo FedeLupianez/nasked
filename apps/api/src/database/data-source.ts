@@ -1,5 +1,4 @@
 import 'reflect-metadata';
-import { config } from 'dotenv';
 import { DataSource, DataSourceOptions } from 'typeorm';
 
 import { Permissions } from '../access/permissions.entity';
@@ -15,8 +14,9 @@ import { Cards } from '../elements/cards.entity';
 import { Fields } from '../elements/fields.entity';
 import { FieldsValues } from '../elements/fieldsValues.entity';
 import { Folders } from '../elements/folders.entity';
+import { loadRootEnv } from '../config/env';
 
-config();
+loadRootEnv();
 
 export const dataSourceOptions: DataSourceOptions = {
   type: 'mariadb',

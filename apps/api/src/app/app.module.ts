@@ -8,11 +8,17 @@ import { CompaniesModule } from '../companies/companies.module';
 import { ElementsModule } from '../elements/elements.module';
 import { AuthModule } from '../auth/auth.module';
 import { dataSourceOptions } from '../database/data-source';
+import { rootEnvPath } from '../config/env';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
+      // Ruta absoluta: no depende del cwd desde el que se lanzo el proceso.
+      // Si no existe (Docker/CI), ConfigModule lo ignora y manda process.env.
+      // No sobreescribe variables ya presentes en el entorno.
+      envFilePath: [rootEnvPath],
+      expandVariables: true,
     }),
 
     TypeOrmModule.forRoot({

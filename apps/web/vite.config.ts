@@ -1,4 +1,5 @@
 import { svelte } from '@sveltejs/vite-plugin-svelte'
+import { fileURLToPath } from 'node:url'
 import { defineConfig } from 'vite'
   
   // These options were migrated by @nx/vite:convert-to-inferred from the project.json file.
@@ -16,4 +17,9 @@ import { defineConfig } from 'vite'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [svelte()],
+  // El .env vive en la raiz del workspace, no en apps/web.
+  envDir: fileURLToPath(new URL('../../', import.meta.url)),
+  // Solo se exponen al bundle las VITE_*; el resto (JWT_SECRET, DB_PASSWORD)
+  // queda en el servidor.
+  envPrefix: 'VITE_',
 })

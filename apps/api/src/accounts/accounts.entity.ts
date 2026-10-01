@@ -1,4 +1,4 @@
-import { BeforeInsert, Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { BeforeInsert, Column, Entity, Index, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { AccountsCompanies } from "./accounts-companies.entity";
 import { hash } from "argon2";
 
@@ -13,6 +13,7 @@ export class Accounts {
   @Column({ type: 'varchar', length: 255, nullable: true })
   lastname: string;
 
+  @Index()
   @Column({ type: 'varchar', length: 255, nullable: false })
   email: string;
 

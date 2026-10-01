@@ -4,6 +4,8 @@ import { uid, makeFolderCode } from './utils';
 const USERS_KEY = 'dash_users_v2';
 const FOLDERS_KEY = 'dash_folders_v1';
 const SESSION_KEY = 'dash_session_v1';
+const THEME_KEY = 'dash_theme_v1';
+const HOME_BANNER_KEY = 'dash_home_banner_v1';
 
 function seedUsers(): User[] {
   return [
@@ -123,6 +125,8 @@ class AppStore {
   users: User[] = $state(load<User[]>(USERS_KEY, seedUsers));
   folders: Folder[] = $state(load<Folder[]>(FOLDERS_KEY, seedFolders));
   currentUserId: string | null = $state(localStorage.getItem(SESSION_KEY));
+  theme: 'dark' | 'light' = $state((localStorage.getItem(THEME_KEY) as 'dark' | 'light') ?? 'dark');
+  homeBannerUrl: string = $state(localStorage.getItem(HOME_BANNER_KEY) ?? '');
   view: string = $state('overview');
   selectedFolderId: string | null = $state(null);
   search: string = $state('');
@@ -151,6 +155,25 @@ class AppStore {
     save(FOLDERS_KEY, this.folders);
     if (this.currentUserId) localStorage.setItem(SESSION_KEY, this.currentUserId);
     else localStorage.removeItem(SESSION_KEY);
+    localStorage.setItem(THEME_KEY, this.theme);
+  }
+
+  toggleTheme() {
+    this.theme = this.theme === 'dark' ? 'light' : 'dark';
+    localStorage.setItem(THEME_KEY, this.theme);
+  }
+
+  setHomeBanner(url: string) {
+    this.homeBannerUrl = url.trim();
+    if (this.homeBannerUrl) localStorage.setItem(HOME_BANNER_KEY, this.homeBannerUrl);
+    else localStorage.removeItem(HOME_BANNER_KEY);
+  }
+
+  setFolderBanner(id: string, url: string) {
+    const f = this.folders.find((x) => x.id === id);
+    if (!f) return;
+    f.bannerUrl = url.trim() || undefined;
+    this.persist();
   }
 
   login(email: string, password: string): string | null {

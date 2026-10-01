@@ -1,0 +1,23 @@
+/* Tarjeta de tarea (usada en detalle de carpeta y listas) */
+
+.card-item {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 12px; padding: 14px; display: flex; flex-direction: column; gap: 10px;
+}
+.due {
+  font-size: 12.5px; font-weight: 700; padding: 7px 10px; border-radius: 999px;
+  display: inline-flex; align-items: center; gap: 6px; width: fit-content;
+  font-variant-numeric: tabular-nums;
+}
+.due.ok { background: #0e2b22; color: #6ee7b7; border: 1px solid #1d5343; }
+.due.soon { background: #2e2409; color: #fcd34d; border: 1px solid #5c450d; }
+.due.urgent { background: #33220c; color: #fdba74; border: 1px solid #6b3d10; }
+.due.overdue { background: #331313; color: #fca5a5; border: 1px solid #6b2626; }
+.kv { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.kv div { background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 8px 10px; }
+.kv small { color: var(--muted); font-size: 11px; display: flex; gap: 6px; align-items: center; }
+.kv b { font-size: 13px; font-weight: 600; display: block; margin-top: 2px; word-break: break-word; }
+.type-tag {
+  font-size: 10px; padding: 2px 6px; border-radius: 999px;
+  background: var(--panel-2); border: 1px solid var(--border); color: var(--muted);
+}

@@ -28,6 +28,8 @@ export interface Folder {
   memberIds: string[];
   cards: CardItem[];
   createdAt: string;
+  /** url de la portada del espacio */
+  bannerUrl?: string;
 }
 
 export interface User {

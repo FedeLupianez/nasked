@@ -1,12 +1,14 @@
 <script lang="ts">
   import { store } from './store.svelte';
   import { FOLDER_COLORS } from './utils';
-  import { Plus, Folder, UserPlus, KeyRound, Layers, Users, Trash2, LogOut } from 'lucide-svelte';
+  import { Plus, Folder, UserPlus, KeyRound, Layers, Users, Trash2, LogOut, ImagePlus } from 'lucide-svelte';
+  import BannerEditor from './BannerEditor.svelte';
 
   let name = $state('');
   let description = $state('');
   let color = $state(FOLDER_COLORS[0]);
   let error = $state<string | null>(null);
+  let editingBannerId = $state<string | null>(null);
   let q = $derived(store.search.toLowerCase());
 
   let list = $derived(
@@ -55,12 +57,21 @@
       <div class="panel"><h3>Sin resultados</h3><p class="muted">Prueba con otra búsqueda o crea / únete a una carpeta.</p></div>
     {:else}
       {#each list as f}
-        <div class="panel folder-card" onclick={() => open(f.id)} role="button" tabindex="0" onkeydown={(e) => e.key === 'Enter' && open(f.id)}>
+        <div class="panel folder-card" class:has-img={!!f.bannerUrl} onclick={() => open(f.id)} role="button" tabindex="0" onkeydown={(e) => e.key === 'Enter' && open(f.id)}>
+          {#if f.bannerUrl}
+            <img class="folder-banner-img" src={f.bannerUrl} alt="Portada de {f.name}" />
+          {/if}
+          <div class="folder-body">
           <div style="display:flex;gap:10px;align-items:center">
             <span class="folder-dot" style="background:{f.color}"></span>
             <b>{f.name}</b>
             <span style="flex:1"></span>
             <span class="folder-code with-icon"><KeyRound size={12} /> {f.code}</span>
+            <button
+              class="icon-btn"
+              title={f.bannerUrl ? 'Cambiar portada' : 'Agregar portada'}
+              onclick={(e) => { e.stopPropagation(); editingBannerId = editingBannerId === f.id ? null : f.id; }}
+            ><ImagePlus size={16} /></button>
             {#if store.isAdmin}
               <button
                 class="btn btn-danger btn-small with-icon"
@@ -74,6 +85,16 @@
             {/if}
           </div>
           <p class="muted with-icon" style="margin:8px 0 0">{f.description} · <Layers size={12} /> {f.cards.length} tarjetas · <Users size={12} /> {f.memberIds.length} miembros</p>
+          {#if editingBannerId === f.id}
+            <div style="margin-top:10px" onclick={(e) => e.stopPropagation()} role="presentation">
+              <BannerEditor
+                url={f.bannerUrl ?? ''}
+                onsave={(u) => { store.setFolderBanner(f.id, u); editingBannerId = null; }}
+                onclose={() => (editingBannerId = null)}
+              />
+            </div>
+          {/if}
+          </div>
         </div>
       {/each}
     {/if}

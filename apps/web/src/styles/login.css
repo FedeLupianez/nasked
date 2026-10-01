@@ -1,0 +1,40 @@
+/* Página de login (pre-auth) */
+
+.login-wrap {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+.login-card {
+  width: 960px;
+  max-width: 100%;
+  display: grid;
+  grid-template-columns: 1.1fr 1fr;
+  background: #111111;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  overflow: hidden;
+}
+.login-hero {
+  padding: 36px;
+  background: #1c1c1c;
+  color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  justify-content: center;
+  border-right: 1px solid var(--border);
+}
+.login-hero h1 { margin: 0; font-size: 34px; letter-spacing: -0.5px; }
+.login-hero p { opacity: 0.9; margin: 0; }
+.hero-badges { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+.hero-badges span {
+  background: #2b2b2b;
+  border: 1px solid #454545;
+  padding: 6px 10px; border-radius: 999px; font-size: 12px;
+}
+.login-form { padding: 32px; display: flex; flex-direction: column; gap: 12px; }
+.login-form h2 { margin: 0 0 4px; }
+.quick { display: flex; gap: 8px; margin-top: 6px; }
+.quick button { flex: 1; }

@@ -1,0 +1,17 @@
+/* Breakpoints globales */
+
+@media (max-width: 1080px) {
+  .home-cols { grid-template-columns: 1fr; }
+  .recents { grid-template-columns: 1fr; }
+}
+@media (max-width: 900px) {
+  .shell { grid-template-columns: 1fr; }
+  .sidebar { position: static; height: auto; }
+  .stats { grid-template-columns: 1fr 1fr; }
+  .login-card { grid-template-columns: 1fr; }
+  .field-row { grid-template-columns: 1fr 1fr; }
+  .search-top { width: 100%; }
+  .topbar { flex-wrap: wrap; }
+  .home-greet h2 { font-size: 28px; }
+  .week { grid-template-columns: repeat(4, 1fr); }
+}

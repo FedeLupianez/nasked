@@ -27,10 +27,6 @@ export class AuthService {
     private readonly tokensRepo: Repository<RefreshTokens>
   ) { }
 
-  /**
-   * Secreto propio de los refresh tokens. Se separa del de los access tokens
-   * para que un access token filtrado no pueda usarse contra /auth/refresh.
-   */
   private get refreshSecret(): string {
     return this.config.get<string>('JWT_REFRESH_SECRET')
       ?? this.config.getOrThrow<string>('JWT_SECRET');
@@ -40,9 +36,6 @@ export class AuthService {
     return createHash('sha256').update(token).digest();
   }
 
-  /**
-   * id_account se guarda como binary(16) (uuid v7), el JWT lo lleva como string.
-   */
   accountSub(account: Accounts): string {
     return stringify(account.id_account);
   }

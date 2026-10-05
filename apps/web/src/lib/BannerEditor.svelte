@@ -1,13 +1,14 @@
 <script lang="ts">
-  import { ImagePlus, Check, X, Eraser } from 'lucide-svelte';
+  import { ImagePlus, Check, X, Eraser, MoveVertical } from 'lucide-svelte';
 
   interface Props {
     url?: string;
     onsave: (url: string) => void;
     onclose?: () => void;
+    onreposition?: () => void;
   }
 
-  let { url = '', onsave, onclose }: Props = $props();
+  let { url = '', onsave, onclose, onreposition }: Props = $props();
 
   let draft = $state(url ?? '');
 
@@ -26,6 +27,9 @@
   />
   <button class="icon-btn" title="Guardar" onclick={save}><Check size={17} /></button>
   <button class="icon-btn" title="Quitar portada" onclick={() => onsave('')}><Eraser size={16} /></button>
+  {#if onreposition}
+    <button class="icon-btn" title="Reposicionar portada" onclick={() => onreposition()}><MoveVertical size={16} /></button>
+  {/if}
   <button class="icon-btn" title="Cancelar" onclick={() => onclose?.()}><X size={17} /></button>
 </div>
 

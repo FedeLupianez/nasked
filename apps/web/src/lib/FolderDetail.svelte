@@ -38,6 +38,17 @@
       overdue: all.filter((c) => getDueInfo(c.dueDate).status === 'overdue').length
     };
   });
+
+  let view = $derived(store.view);
+  $effect(() => {
+    const id = store.highlightCardId;
+    if (!id || view !== 'folder-detail') return;
+    requestAnimationFrame(() => {
+      document
+        .getElementById(`card-${id}`)
+        ?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    });
+  });
 </script>
 
 {#if !folder}
@@ -86,7 +97,9 @@
   {:else}
     <div class="grid">
       {#each cards as c (c.id)}
-        <CardItem card={c} folderId={folder.id} />
+        <div id={`card-${c.id}`} class:card-highlight={store.highlightCardId === c.id}>
+          <CardItem card={c} folderId={folder.id} />
+        </div>
       {/each}
     </div>
   {/if}

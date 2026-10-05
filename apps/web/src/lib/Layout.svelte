@@ -2,6 +2,7 @@
   import type { Snippet } from "svelte";
   import { store } from "./store.svelte";
   import { initials } from "./utils";
+  import { getDueInfo } from "./utils";
   import HomeBanner from "./HomeBanner.svelte";
   import {
     House,
@@ -19,6 +20,49 @@
 
   let { children }: { children?: Snippet } = $props();
   let searchOpen = $state(false);
+  let notifOpen = $state(false);
+
+  const notifications = $derived.by(() => {
+    const list = store.visibleFolders
+      .flatMap((f) => f.cards.map((c) => ({ card: c, folder: f })))
+      .sort((a, b) => +new Date(b.card.createdAt) - +new Date(a.card.createdAt))
+      .slice(0, 30);
+    return list;
+  });
+
+  const unreadCount = $derived(
+    notifications.filter((n) => !store.reviewedNotifIds.includes(n.card.id)).length,
+  );
+
+  function notifBucket(iso: string): string {
+    const d = new Date(iso);
+    const now = new Date();
+    const startOfDay = (x: Date) => new Date(x.getFullYear(), x.getMonth(), x.getDate()).getTime();
+    const diffDays = Math.round((startOfDay(now) - startOfDay(d)) / 86400000);
+    if (diffDays <= 0) return "Hoy";
+    if (diffDays === 1) return "Ayer";
+    if (diffDays < 7) return "Esta semana";
+    if (diffDays < 14) return "La semana pasada";
+    return "Anteriores";
+  }
+
+  const notifGroups = $derived.by(() => {
+    const groups: { label: string; items: typeof notifications }[] = [];
+    for (const n of notifications) {
+      const label = notifBucket(n.card.createdAt);
+      const g = groups.find((x) => x.label === label);
+      if (g) g.items.push(n);
+      else groups.push({ label, items: [n] });
+    }
+    return groups;
+  });
+
+  function notifColor(dueISO: string): string {
+    const s = getDueInfo(dueISO).status;
+    if (s === "overdue") return "var(--red)";
+    if (s === "urgent" || s === "soon") return "var(--amber)";
+    return "var(--green)";
+  }
 
   const navUser = [
     { id: "overview", label: "Home", icon: House },
@@ -160,9 +204,43 @@
           <Search size={18} />
         </button>
       {/if}
-      <button class="icon-btn" title="Notificaciones">
-        <Bell size={16} />
-      </button>
+      <div class="bell-wrap">
+        <button class="icon-btn" title="Notificaciones" onclick={() => (notifOpen = !notifOpen)}>
+          <Bell size={16} />
+          {#if unreadCount > 0}
+            <span class="bell-dot"></span>
+          {/if}
+        </button>
+        {#if notifOpen}
+          <div class="notif-panel">
+            <h4>Últimas notificaciones</h4>
+            {#if !notifGroups.length}
+              <p class="notif-empty">Sin notificaciones.</p>
+            {/if}
+            {#each notifGroups as g, gi (g.label)}
+              {#if gi > 0}
+                <hr class="notif-divider" />
+              {/if}
+              <p class="notif-group-label">{g.label}</p>
+              {#each g.items as n (n.card.id)}
+                <button
+                  class="notif-block"
+                  onclick={() => {
+                    store.openNotification(n.folder.id, n.card.id);
+                    notifOpen = false;
+                  }}
+                >
+                  <span class="notif-bar" style="background:{notifColor(n.card.dueDate)}"></span>
+                  <span class="notif-body">
+                    <b>{n.card.title}</b>
+                    <small>{getDueInfo(n.card.dueDate).label} · {n.folder.name}</small>
+                  </span>
+                </button>
+              {/each}
+            {/each}
+          </div>
+        {/if}
+      </div>
       <span class="clock-pill">{time} <span style="color:var(--faint)">{date}</span></span>
     </div>
     {#if store.view === 'overview'}

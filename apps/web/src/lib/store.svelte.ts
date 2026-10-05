@@ -6,6 +6,8 @@ const FOLDERS_KEY = 'dash_folders_v1';
 const SESSION_KEY = 'dash_session_v1';
 const THEME_KEY = 'dash_theme_v1';
 const HOME_BANNER_KEY = 'dash_home_banner_v1';
+const HOME_BANNER_POS_KEY = 'dash_home_banner_pos_v1';
+const REVIEWS_KEY = 'dash_reviewed_notifs_v1';
 
 function seedUsers(): User[] {
   return [
@@ -148,9 +150,21 @@ class AppStore {
   currentUserId: string | null = $state(localStorage.getItem(SESSION_KEY));
   theme: 'dark' | 'light' = $state((localStorage.getItem(THEME_KEY) as 'dark' | 'light') ?? 'dark');
   homeBannerUrl: string = $state(localStorage.getItem(HOME_BANNER_KEY) ?? '');
+  /** posición vertical de la portada: 0 = arriba, 100 = abajo */
+  homeBannerPos: number = $state(Number(localStorage.getItem(HOME_BANNER_POS_KEY)) || 50);
   view: string = $state('overview');
   selectedFolderId: string | null = $state(null);
   search: string = $state('');
+  reviewedNotifIds: string[] = $state(
+    (() => {
+      try {
+        return JSON.parse(localStorage.getItem(REVIEWS_KEY) ?? '[]');
+      } catch {
+        return [];
+      }
+    })()
+  );
+  highlightCardId: string | null = $state(null);
 
   get currentUser(): User | null {
     return this.users.find((u) => u.id === this.currentUserId) ?? null;
@@ -188,6 +202,11 @@ class AppStore {
     this.homeBannerUrl = url.trim();
     if (this.homeBannerUrl) localStorage.setItem(HOME_BANNER_KEY, this.homeBannerUrl);
     else localStorage.removeItem(HOME_BANNER_KEY);
+  }
+
+  setHomeBannerPos(pos: number) {
+    this.homeBannerPos = Math.min(100, Math.max(0, Math.round(pos)));
+    localStorage.setItem(HOME_BANNER_POS_KEY, String(this.homeBannerPos));
   }
 
   setFolderBanner(id: string, url: string) {
@@ -321,6 +340,20 @@ class AppStore {
       this.view = 'folders';
     }
     this.persist();
+  }
+
+  markNotifReviewed(cardId: string) {
+    if (!this.reviewedNotifIds.includes(cardId)) {
+      this.reviewedNotifIds = [...this.reviewedNotifIds, cardId];
+      localStorage.setItem(REVIEWS_KEY, JSON.stringify(this.reviewedNotifIds));
+    }
+  }
+
+  openNotification(folderId: string, cardId: string) {
+    this.markNotifReviewed(cardId);
+    this.selectedFolderId = folderId;
+    this.highlightCardId = cardId;
+    this.view = 'folder-detail';
   }
 
   resetDemo() {

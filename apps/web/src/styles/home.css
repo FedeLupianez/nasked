@@ -26,6 +26,12 @@
   background: linear-gradient(to bottom, transparent 10%, var(--bg) 100%);
   pointer-events: none;
 }
+.home-banner.has-img.repositioning { pointer-events: auto; z-index: 3; }
+.home-banner.repositioning .banner-drag { pointer-events: auto; }
+.banner-pop.reposition-pop {
+  left: 16px; right: auto; width: auto;
+  justify-content: flex-start;
+}
 .banner-trigger {
   position: absolute; top: calc(var(--topbar-h) + 12px); left: 16px; z-index: 4;
   width: 34px; height: 34px; border-radius: 10px;

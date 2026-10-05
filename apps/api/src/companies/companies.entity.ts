@@ -42,6 +42,9 @@ export class Companies {
   @OneToMany(() => AccountsCompanies, (ac) => ac.company)
   accountsCompanies: AccountsCompanies[];
 
+  @Column({ type: 'int', unsigned: true })
+  id_plan: number;
+
   @ManyToOne(() => Plans, (p) => p.companies, { nullable: false })
   @JoinColumn({ name: 'id_plan', referencedColumnName: 'id_plan' })
   plan: Plans;

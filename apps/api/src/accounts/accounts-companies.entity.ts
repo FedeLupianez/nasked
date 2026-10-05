@@ -1,4 +1,4 @@
-import { Entity, Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 import { Accounts } from "./accounts.entity";
 import { Companies } from "../companies/companies.entity";
 import { Roles } from "../access/roles.entity";
@@ -8,6 +8,15 @@ import { Roles } from "../access/roles.entity";
 export class AccountsCompanies {
   @PrimaryGeneratedColumn({ type: 'int', unsigned: true })
   id_account_company: number;
+
+  @Column({ type: 'binary', length: 16 })
+  id_account: Buffer;
+
+  @Column({ type: 'int', unsigned: true })
+  id_company: number;
+
+  @Column({ type: 'int', unsigned: true })
+  id_role: number;
 
   @ManyToOne(() => Accounts, (a) => a.accountsCompanies, { nullable: false })
   @JoinColumn({ name: 'id_account', referencedColumnName: 'id_account' })

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { ImagePlus, Check, X } from 'lucide-svelte';
+  import { ImagePlus, Check, X, Eraser } from 'lucide-svelte';
 
   interface Props {
     url?: string;
@@ -9,10 +9,11 @@
 
   let { url = '', onsave, onclose }: Props = $props();
 
-  let draft = $state('');
-  $effect(() => {
-    draft = url;
-  });
+  let draft = $state(url ?? '');
+
+  function save() {
+    onsave(draft.trim());
+  }
 </script>
 
 <div class="banner-editor" onclick={(e) => e.stopPropagation()} onkeydown={(e) => e.stopPropagation()} role="presentation">
@@ -21,9 +22,10 @@
     class="be-input"
     placeholder="https://…/portada.jpg"
     bind:value={draft}
-    onkeydown={(e) => e.key === 'Enter' && onsave(draft)}
+    onkeydown={(e) => e.key === 'Enter' && save()}
   />
-  <button class="icon-btn" title="Guardar" onclick={() => onsave(draft)}><Check size={17} /></button>
+  <button class="icon-btn" title="Guardar" onclick={save}><Check size={17} /></button>
+  <button class="icon-btn" title="Quitar portada" onclick={() => onsave('')}><Eraser size={16} /></button>
   <button class="icon-btn" title="Cancelar" onclick={() => onclose?.()}><X size={17} /></button>
 </div>
 

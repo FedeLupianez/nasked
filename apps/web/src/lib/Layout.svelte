@@ -14,9 +14,11 @@
     Moon,
     Sun,
     Plus,
+    Search,
   } from "lucide-svelte";
 
   let { children }: { children?: Snippet } = $props();
+  let searchOpen = $state(false);
 
   const navUser = [
     { id: "overview", label: "Home", icon: House },
@@ -140,17 +142,26 @@
   <div class="main">
     <div class="topbar">
       <span class="crumb">
-        {store.currentUser?.name ?? 'Mi Workspace'}
-        <span class="sep">/</span>{titles[store.view] ?? 'Home'}
+        <button class="crumb-link" onclick={() => (store.view = 'overview')}>Home</button>
+        {#if store.view !== 'overview'}
+          <span class="sep">/</span><button class="crumb-link" onclick={() => (store.view = store.view)}>{titles[store.view] ?? 'Home'}</button>
+        {/if}
       </span>
       <span class="spacer"></span>
-      <input
-        class="search-top"
-        placeholder="Buscar…"
-        bind:value={store.search}
-      />
+      {#if searchOpen}
+        <input
+          class="search-top"
+          placeholder="Buscar…"
+          bind:value={store.search}
+          onblur={() => (searchOpen = false)}
+        />
+      {:else}
+        <button class="icon-btn" title="Buscar" onclick={() => (searchOpen = true)}>
+          <Search size={18} />
+        </button>
+      {/if}
       <button class="icon-btn" title="Notificaciones">
-        <Bell size={20} />
+        <Bell size={16} />
       </button>
       <span class="clock-pill">{time} <span style="color:var(--faint)">{date}</span></span>
     </div>

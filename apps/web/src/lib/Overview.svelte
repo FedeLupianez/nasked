@@ -3,8 +3,6 @@
   import { getDueInfo } from "./utils";
   import {
     Search,
-    Sun,
-    Moon,
     ChevronRight,
     Folder,
     Layers,
@@ -26,7 +24,12 @@
     hour < 12 ? "Buenos días" : hour < 19 ? "Buenas tardes" : "Buenas noches",
   );
   let firstName = $derived(store.currentUser?.name.split(" ")[0] ?? "");
-  let isDay = $derived(hour < 19);
+  let selectedDay = $state<Date | null>(null);
+  let dayItems = $derived.by(() => {
+    if (!selectedDay) return [];
+    const key = selectedDay.toDateString();
+    return cards.filter(({ card }) => new Date(card.dueDate).toDateString() === key);
+  });
 
   let todayCount = $derived(
     cards.filter(({ card }) => {
@@ -118,7 +121,6 @@
 <section class="home-greet">
   <h2>
     {greeting}, {firstName}
-    {#if isDay}<Sun size={30} />{:else}<Moon size={30} />{/if}
   </h2>
   <p>
     {#if pending === 0}
@@ -136,7 +138,6 @@
     placeholder="Buscar tareas o documentos en todas las vistas..."
     bind:value={store.search}
   />
-  <button title="Buscar"><Search size={19} /></button>
 </div>
 
 {#if query.trim()}
@@ -164,10 +165,12 @@
     <div class="inner">
       <div class="week">
         {#each week as d (d.date.toISOString())}
-          <div
+          <button
             class="week-day"
             class:today={d.today}
+            class:selected={selectedDay?.toDateString() === d.date.toDateString()}
             title={`${d.dow} ${d.dom}`}
+            onclick={() => (selectedDay = selectedDay?.toDateString() === d.date.toDateString() ? null : d.date)}
           >
             <span class="dow">{d.dow}</span>
             <span class="dom">{d.dom}</span>
@@ -176,11 +179,26 @@
                 <i class="dot-{s}"></i>
               {/each}
             </span>
-          </div>
+          </button>
         {/each}
       </div>
 
-      {#if !upcoming.length}
+      {#if selectedDay}
+        <h4 style="margin:14px 0 6px;font-size:14px;font-weight:500;color:var(--muted)">
+          Vencen el {selectedDay.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' })}
+        </h4>
+        {#if !dayItems.length}
+          <div class="home-empty">Sin vencimientos ese día.</div>
+        {:else}
+          {#each dayItems as it (it.card.id)}
+            <button class="due-row" onclick={() => openFolder(it.folder.id)}>
+              <span class={`due ${getDueInfo(it.card.dueDate).status}`}>{getDueInfo(it.card.dueDate).short}</span>
+              <span class="t">{it.card.title}</span>
+              <span class="w">{it.folder.name}</span>
+            </button>
+          {/each}
+        {/if}
+      {:else if !upcoming.length}
         <div class="home-empty">Sin vencimientos próximos.</div>
       {:else}
         {#each upcoming as u (u.card.id)}
@@ -196,18 +214,16 @@
 
   <div class="home-card">
     <h3>Notificaciones</h3>
-    <div class="inner" style="padding:10px 14px;margin-bottom:12px">
-      <span class="with-icon" style="font-size:13px;color:var(--muted)">
-        <Bell size={14} />
-        {notifications.length} sin revisar
-      </span>
-    </div>
-    <div class="inner">
+    <p style="margin:-12px 0 16px;font-size:13px;color:var(--muted);display:flex;align-items:center;gap:6px">
+      <Bell size={14} />
+      {notifications.length} sin revisar
+    </p>
+    <div class="notif-list">
       {#if !notifications.length}
         <div class="home-empty">Sin novedades.</div>
       {:else}
         {#each notifications as n (n.card.id)}
-          <div class="notif">
+          <button class="notif" onclick={() => openFolder(n.folder.id)}>
             <span
               class="mark"
               style="background:{n.due.status === 'overdue'
@@ -218,7 +234,7 @@
               {n.card.title}
               <small>{n.due.label} · {n.folder.name}</small>
             </span>
-          </div>
+          </button>
         {/each}
       {/if}
     </div>

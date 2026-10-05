@@ -9,9 +9,11 @@
 <div class="home-banner" class:has-img={!!store.homeBannerUrl}>
   {#if store.homeBannerUrl}
     <img class="home-banner-img" src={store.homeBannerUrl} alt="" aria-hidden="true" />
+    <img class="home-banner-img-blur" src={store.homeBannerUrl} alt="" aria-hidden="true" />
   {/if}
+</div>
 
-  <button
+<button
     class="banner-trigger"
     title={store.homeBannerUrl ? 'Cambiar portada' : 'Agregar portada'}
     onclick={() => (editing = !editing)}
@@ -28,4 +30,3 @@
       />
     </div>
   {/if}
-</div>

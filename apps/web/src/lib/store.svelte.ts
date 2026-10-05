@@ -121,8 +121,29 @@ function save(key: string, value: unknown) {
 }
 
 // ---- Estado global con runas de Svelte 5 ----
+function ensureSeeds(users: User[], folders: Folder[]): { users: User[]; folders: Folder[] } {
+  // Si los datos guardados están vacíos o corruptos, restaurar el mock
+  const hasDemoUsers = Array.isArray(users) && users.some((u) => u.email === 'admin@demo.io');
+  if (!hasDemoUsers || !Array.isArray(users) || users.length === 0) {
+    users = seedUsers();
+  }
+  if (!Array.isArray(folders) || folders.length === 0) {
+    folders = seedFolders();
+  }
+  return { users, folders };
+}
+
 class AppStore {
-  users: User[] = $state(load<User[]>(USERS_KEY, seedUsers));
+  users: User[] = $state(
+    (() => {
+      const u = load<User[]>(USERS_KEY, seedUsers);
+      const f = load<Folder[]>(FOLDERS_KEY, seedFolders);
+      const fixed = ensureSeeds(u, f);
+      save(USERS_KEY, fixed.users);
+      save(FOLDERS_KEY, fixed.folders);
+      return fixed.users;
+    })()
+  );
   folders: Folder[] = $state(load<Folder[]>(FOLDERS_KEY, seedFolders));
   currentUserId: string | null = $state(localStorage.getItem(SESSION_KEY));
   theme: 'dark' | 'light' = $state((localStorage.getItem(THEME_KEY) as 'dark' | 'light') ?? 'dark');

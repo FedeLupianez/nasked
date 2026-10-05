@@ -349,6 +349,13 @@ class AppStore {
     }
   }
 
+  markAllNotifsReviewed(cardIds: string[]) {
+    const set = new Set(this.reviewedNotifIds);
+    for (const id of cardIds) set.add(id);
+    this.reviewedNotifIds = [...set];
+    localStorage.setItem(REVIEWS_KEY, JSON.stringify(this.reviewedNotifIds));
+  }
+
   openNotification(folderId: string, cardId: string) {
     this.markNotifReviewed(cardId);
     this.selectedFolderId = folderId;

@@ -86,6 +86,7 @@
     join: "Unirse a una carpeta",
     account: "Configuración de cuenta",
     users: "Usuarios y miembros",
+    today: "Tareas de hoy",
   };
 
   let clock = $state(new Date());
@@ -214,6 +215,14 @@
         {#if notifOpen}
           <div class="notif-panel">
             <h4>Últimas notificaciones</h4>
+            {#if unreadCount > 0}
+              <button
+                class="notif-markall"
+                onclick={() => store.markAllNotifsReviewed(notifications.map((n) => n.card.id))}
+              >
+                Marcar todas como vistas
+              </button>
+            {/if}
             {#if !notifGroups.length}
               <p class="notif-empty">Sin notificaciones.</p>
             {/if}
@@ -225,6 +234,7 @@
               {#each g.items as n (n.card.id)}
                 <button
                   class="notif-block"
+                  class:unread={!store.reviewedNotifIds.includes(n.card.id)}
                   onclick={() => {
                     store.openNotification(n.folder.id, n.card.id);
                     notifOpen = false;
@@ -232,7 +242,12 @@
                 >
                   <span class="notif-bar" style="background:{notifColor(n.card.dueDate)}"></span>
                   <span class="notif-body">
-                    <b>{n.card.title}</b>
+                    <b>
+                      {#if !store.reviewedNotifIds.includes(n.card.id)}
+                        <i class="notif-unread-dot"></i>
+                      {/if}
+                      {n.card.title}
+                    </b>
                     <small>{getDueInfo(n.card.dueDate).label} · {n.folder.name}</small>
                   </span>
                 </button>

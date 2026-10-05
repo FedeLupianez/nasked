@@ -119,6 +119,7 @@
 .dot-overdue { background: var(--red); }
 .dot-urgent { background: var(--amber); }
 .dot-soon { background: var(--border-strong); }
+.dot-ok { background: var(--green); }
 
 .due-row {
   display: flex; align-items: center; gap: 10px;
@@ -144,6 +145,18 @@
 }
 .notif:hover { border-color: var(--border-strong); }
 .notif-list { display: flex; flex-direction: column; gap: 10px; }
+.notif-filters { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+.notif-chip {
+  border: 1px solid var(--border); background: var(--panel-2); color: var(--muted);
+  border-radius: 999px; padding: 4px 11px; font-size: 12px; cursor: pointer; font-family: inherit;
+}
+.notif-chip:hover { border-color: var(--border-strong); color: var(--text); }
+.notif-chip.active { background: var(--text); color: var(--bg); border-color: var(--text); }
+.link-like {
+  background: none; border: none; padding: 0; cursor: pointer; color: inherit;
+  font: inherit; text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--border-strong);
+}
+.link-like:hover { color: var(--text); text-decoration-color: var(--text); }
 .notif .mark { width: 8px; height: 8px; border-radius: 50%; margin-top: 6px; flex-shrink: 0; }
 .notif small { display: block; color: var(--faint); font-size: 12px; }
 

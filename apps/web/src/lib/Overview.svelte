@@ -25,10 +25,18 @@
   );
   let firstName = $derived(store.currentUser?.name.split(" ")[0] ?? "");
   let selectedDay = $state<Date | null>(null);
+  const STATUS_RANK: Record<string, number> = { overdue: 0, urgent: 1, soon: 2, ok: 3 };
   let dayItems = $derived.by(() => {
     if (!selectedDay) return [];
     const key = selectedDay.toDateString();
-    return cards.filter(({ card }) => new Date(card.dueDate).toDateString() === key);
+    return cards
+      .filter(({ card }) => new Date(card.dueDate).toDateString() === key)
+      .sort((a, b) => {
+        const ra = STATUS_RANK[getDueInfo(a.card.dueDate).status] ?? 9;
+        const rb = STATUS_RANK[getDueInfo(b.card.dueDate).status] ?? 9;
+        if (ra !== rb) return ra - rb;
+        return +new Date(a.card.dueDate) - +new Date(b.card.dueDate);
+      });
   });
 
   let todayCount = $derived(
@@ -77,6 +85,20 @@
       .slice(0, 4),
   );
 
+  let notifFilter = $state<string>('Todos');
+  function notifDayBucket(iso: string): string {
+    const d = new Date(iso);
+    const now = new Date();
+    const startOfDay = (x: Date) => new Date(x.getFullYear(), x.getMonth(), x.getDate()).getTime();
+    const diffDays = Math.round((startOfDay(now) - startOfDay(d)) / 86400000);
+    if (diffDays <= 0) return 'Hoy';
+    if (diffDays === 1) return 'Ayer';
+    if (diffDays < 7) return 'Esta semana';
+    if (diffDays < 14) return 'La semana pasada';
+    return 'Anteriores';
+  }
+  const NOTIF_FILTERS = ['Todos', 'Hoy', 'Ayer', 'Esta semana', 'La semana pasada'];
+
   let notifications = $derived(
     cards
       .map(({ card, folder }) => ({
@@ -85,8 +107,14 @@
         due: getDueInfo(card.dueDate),
       }))
       .filter(({ due }) => due.status === "overdue" || due.status === "urgent")
-      .sort((a, b) => a.due.diffMs - b.due.diffMs)
-      .slice(0, 3),
+      .filter(({ card }) => notifFilter === 'Todos' || notifDayBucket(card.dueDate) === notifFilter)
+      .sort((a, b) => {
+        const ra = STATUS_RANK[a.due.status] ?? 9;
+        const rb = STATUS_RANK[b.due.status] ?? 9;
+        if (ra !== rb) return ra - rb;
+        return a.due.diffMs - b.due.diffMs;
+      })
+      .slice(0, 6),
   );
 
   let results = $derived.by(() => {
@@ -126,8 +154,10 @@
     {#if pending === 0}
       No hay vencimientos para hoy. Todo al día.
     {:else}
-      Hay <b>{pending}</b>
-      {pending === 1 ? "tarea pendiente" : "tareas pendientes"} en tus carpetas.
+      <button class="link-like" onclick={() => (store.view = 'today')}>
+        Hay <b>{pending}</b>
+        {pending === 1 ? "tarea pendiente" : "tareas pendientes"} en tus carpetas.
+      </button>
     {/if}
   </p>
 </section>
@@ -214,10 +244,21 @@
 
   <div class="home-card">
     <h3>Notificaciones</h3>
-    <p style="margin:-12px 0 16px;font-size:13px;color:var(--muted);display:flex;align-items:center;gap:6px">
+    <p style="margin:-12px 0 10px;font-size:13px;color:var(--muted);display:flex;align-items:center;gap:6px">
       <Bell size={14} />
       {notifications.length} sin revisar
     </p>
+    <div class="notif-filters">
+      {#each NOTIF_FILTERS as f (f)}
+        <button
+          class="notif-chip"
+          class:active={notifFilter === f}
+          onclick={() => (notifFilter = f)}
+        >
+          {f}
+        </button>
+      {/each}
+    </div>
     <div class="notif-list">
       {#if !notifications.length}
         <div class="home-empty">Sin novedades.</div>

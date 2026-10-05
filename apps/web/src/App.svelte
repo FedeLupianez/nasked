@@ -8,6 +8,7 @@
   import JoinFolder from './lib/JoinFolder.svelte';
   import AccountSettings from './lib/AccountSettings.svelte';
   import UsersView from './lib/UsersView.svelte';
+  import TodayTasks from './lib/TodayTasks.svelte';
 </script>
 
 {#if !store.currentUser}
@@ -30,6 +31,8 @@
       {:else}
         <div class="panel"><h3>Solo ADMIN</h3><p class="muted">Esta sección es solo para administradores.</p></div>
       {/if}
+    {:else if store.view === 'today'}
+      <TodayTasks />
     {/if}
   </Layout>
 {/if}

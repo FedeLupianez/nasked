@@ -1,5 +1,6 @@
 import type { Folder, User } from './types';
 import { uid, makeFolderCode } from './utils';
+import { deleteAttachment, clearAllAttachments } from './attachments';
 
 const USERS_KEY = 'dash_users_v2';
 const FOLDERS_KEY = 'dash_folders_v1';
@@ -307,6 +308,12 @@ class AppStore {
   }
 
   deleteFolder(id: string) {
+    const folder = this.folders.find((f) => f.id === id);
+    if (folder) {
+      for (const card of folder.cards) {
+        for (const a of card.attachments ?? []) void deleteAttachment(a);
+      }
+    }
     this.folders = this.folders.filter((f) => f.id !== id);
     for (const u of this.users) u.joinedFolderIds = u.joinedFolderIds.filter((x) => x !== id);
     if (this.selectedFolderId === id) {
@@ -366,6 +373,7 @@ class AppStore {
   resetDemo() {
     localStorage.removeItem(USERS_KEY);
     localStorage.removeItem(FOLDERS_KEY);
+    void clearAllAttachments();
     this.users = seedUsers();
     this.folders = seedFolders();
     this.view = 'overview';

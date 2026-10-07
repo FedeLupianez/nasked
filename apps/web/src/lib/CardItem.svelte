@@ -3,6 +3,8 @@
   import type { CardItem } from './types';
   import { getDueInfo, formatDateTime, FIELD_TYPE_LABEL } from './utils';
   import { store } from './store.svelte';
+  import { deleteAttachment } from './attachments';
+  import AttachmentList from './AttachmentList.svelte';
   import { Trash2, Timer } from 'lucide-svelte';
 
   let { card, folderId }: { card: CardItem; folderId: string } = $props();
@@ -16,12 +18,13 @@
 
   let due = $derived(getDueInfo(card.dueDate, now));
 
-  function del() {
+  async function del() {
     if (!confirm(`¿Eliminar tarjeta "${card.title}"?`)) return;
     const f = store.folders.find((x) => x.id === folderId);
     if (f) {
       f.cards = f.cards.filter((c) => c.id !== card.id);
       store.persist();
+      for (const a of card.attachments ?? []) await deleteAttachment(a);
     }
   }
 </script>
@@ -52,5 +55,9 @@
     </div>
   {:else}
     <span class="muted" style="font-size:12px">Sin campos extra.</span>
+  {/if}
+
+  {#if card.attachments?.length}
+    <AttachmentList attachments={card.attachments} />
   {/if}
 </div>

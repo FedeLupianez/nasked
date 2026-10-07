@@ -8,6 +8,20 @@ export interface CustomField {
   value: string;
 }
 
+export interface Attachment {
+  id: string;
+  /** nombre original del archivo */
+  name: string;
+  /** mime type, ej: application/pdf */
+  mime: string;
+  /** tamaño en bytes */
+  size: number;
+  /** clave del binario en IndexedDB */
+  storageKey: string;
+  /** ISO datetime de cuando se adjuntó */
+  addedAt: string;
+}
+
 export interface CardItem {
   id: string;
   title: string;
@@ -16,6 +30,8 @@ export interface CardItem {
   dueDate: string;
   fields: CustomField[];
   createdAt: string;
+  /** archivos adjuntos (el binario vive en IndexedDB) */
+  attachments?: Attachment[];
 }
 
 export interface Folder {

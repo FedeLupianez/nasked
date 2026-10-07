@@ -19,7 +19,14 @@ docker compose -f docker/compose.yaml --env-file .env \
   --profile api up --build
 ```
 
-# 4) Solo MariaDB
+# 4) Backend + MariaDB + MinIO
+# (minio no tiene profile, siempre se levanta; se lista explícito por claridad)
+```bash
+docker compose -f docker/compose.yaml --env-file .env \
+  --profile api up --build mariadb api minio
+```
+
+# 5) Solo MariaDB
 ```bash
 docker compose -f docker/compose.yaml --env-file .env --profile db up -d
 ```

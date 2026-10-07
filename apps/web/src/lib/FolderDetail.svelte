@@ -41,15 +41,38 @@
   });
 
   let view = $derived(store.view);
+  /** card a la que hay que hacer scroll: se resuelve recién cuando masonry la posicionó */
+  let pendingScrollId: string | null = $state(null);
+
   $effect(() => {
     const id = store.highlightCardId;
-    if (!id || view !== 'folder-detail') return;
-    requestAnimationFrame(() => {
-      document
-        .getElementById(`card-${id}`)
-        ?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    });
+    if (!id || view !== 'folder-detail') {
+      pendingScrollId = null;
+      return;
+    }
+    pendingScrollId = id;
+    // el rAF del masonry se agendó antes, así que acá las posiciones ya están
+    requestAnimationFrame(() => scrollToCard(id));
   });
+
+  function scrollToCard(id: string) {
+    if (pendingScrollId !== id) return;
+    pendingScrollId = null;
+    document.getElementById(`card-${id}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+
+  function masonryOptions() {
+    return {
+      minColWidth: 300,
+      colGap: 16,
+      rowGap: 16,
+      // con posicionamiento absoluto las cards arrancan en top:0: si el masonry
+      // todavía no repartió columnas, el scroll se difiere hasta onlayout.
+      onlayout: () => {
+        if (pendingScrollId) scrollToCard(pendingScrollId);
+      }
+    };
+  }
 </script>
 
 {#if !folder}
@@ -96,7 +119,7 @@
       </p>
     </div>
   {:else}
-    <div class="masonry" use:masonry={{ minColWidth: 300, colGap: 16, rowGap: 16 }}>
+    <div class="masonry" use:masonry={masonryOptions()}>
       {#each cards as c (c.id)}
         <div id={`card-${c.id}`} class:card-highlight={store.highlightCardId === c.id}>
           <CardItem card={c} folderId={folder.id} />

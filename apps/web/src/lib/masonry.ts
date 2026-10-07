@@ -17,16 +17,22 @@ export interface MasonryOptions {
   colGap?: number;
   /** separacion vertical entre cards */
   rowGap?: number;
+  /**
+   * Se invoca despues de cada recolocacion. Necesario para acciones que
+   * dependan de la posicion final (por ejemplo hacer scroll hasta una card):
+   * antes de este callback las cards siguen en top:0.
+   */
+  onlayout?: () => void;
 }
 
-const DEFAULTS: Required<MasonryOptions> = {
+const DEFAULTS: Required<Omit<MasonryOptions, 'onlayout'>> = {
   minColWidth: 300,
   colGap: 14,
   rowGap: 14
 };
 
 export function masonry(node: HTMLElement, options: MasonryOptions = {}) {
-  const o = { ...DEFAULTS, ...options };
+  const o: MasonryOptions = { ...DEFAULTS, ...options };
   let frame = 0;
   let width = 0;
   let cols = 0;
@@ -73,6 +79,7 @@ export function masonry(node: HTMLElement, options: MasonryOptions = {}) {
       heights[col] = y + h + o.rowGap;
     }
     node.style.height = `${Math.max(...heights) - o.rowGap}px`;
+    o.onlayout?.();
   }
 
   node.classList.add('masonry');

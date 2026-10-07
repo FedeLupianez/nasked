@@ -28,7 +28,6 @@
   position: absolute; top: 0; left: 0;
   will-change: transform;
 }
-.masonry-item > * { height: 100%; }
 @media (prefers-reduced-motion: no-preference) {
   .masonry-item { transition: transform .18s ease; }
 }

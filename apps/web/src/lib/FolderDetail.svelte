@@ -88,7 +88,6 @@
     probeTop = -1;
     probeHits = 0;
     pendingScrollId = null;
-    console.log('[swp] scroll frame=', frame, 'top=', top, 'hits=', probeHits);
     el.scrollIntoView({ behavior: 'smooth', block: 'center' });
   }
 </script>

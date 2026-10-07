@@ -1,13 +1,13 @@
 /**
  * Masonry tipo Pinterest: posicionamiento absoluto en pixeles.
  *
- * Cada card se coloca en la columna mas corta (la de menor acumulado), a la
- * altura exacta de esa columna. No hay grilla de filas de por medio, asi que las
- * separaciones son siempre exactamente `colGap` / `rowGap`, sin cuantizar.
+ * Cada card se coloca en la columna de menor acumulado, a la altura exacta de esa
+ * columna. No hay grilla de filas de por medio, asi que las separaciones son
+ * siempre exactamente `colGap` / `rowGap`, sin cuantizar: nunca quedan huecos.
  *
- * Las columnas se reparten en round-robin por orden de lectura: la card N va a
- * la columna N % cols, de modo que el orden horizontal se mantiene de izquierda a
- * derecha como en Pinterest, sin huecos y sin saltos verticales.
+ * Se recorre el DOM en orden y se reparte round-robin por la columna mas corta,
+ * que es lo que mantiene el orden de lectura de izquierda a derecha sin saltos
+ * verticales grandes.
  */
 
 export interface MasonryOptions {
@@ -36,8 +36,6 @@ export function isPositioned(el: HTMLElement): boolean {
 export function masonry(node: HTMLElement, options: MasonryOptions = {}) {
   const o: MasonryOptions = { ...DEFAULTS, ...options };
   let frame = 0;
-  let width = 0;
-  let cols = 0;
 
   const resizeObserver = new ResizeObserver(schedule);
   const mutationObserver = new MutationObserver(() => {
@@ -63,16 +61,15 @@ export function masonry(node: HTMLElement, options: MasonryOptions = {}) {
   }
 
   function relayout() {
-    const next = width = node.clientWidth;
-    if (!next) return;
-    cols = Math.max(1, Math.floor((next + o.colGap) / (o.minColWidth + o.colGap)));
-    const colWidth = (next - o.colGap * (cols - 1)) / cols;
+    const available = node.clientWidth;
+    if (!available) return;
+    const cols = Math.max(1, Math.floor((available + o.colGap) / (o.minColWidth + o.colGap)));
+    const colWidth = (available - o.colGap * (cols - 1)) / cols;
     const heights = new Array<number>(cols).fill(0);
 
     for (const el of items()) {
+      // el ancho se fija antes de medir, para que la altura medida sea la final
       el.style.width = `${colWidth}px`;
-      el.style.removeProperty('grid-row-end');
-      // se mide el ancho antes de fijar la altura para no realimentar el layout
       const h = el.getBoundingClientRect().height;
       const col = heights.indexOf(Math.min(...heights));
       const x = col * (colWidth + o.colGap);

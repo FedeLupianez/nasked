@@ -96,7 +96,7 @@
       </p>
     </div>
   {:else}
-    <div class="masonry" use:masonry={{ minColWidth: 300, colGap: 14, rowGap: 8, rowHeight: 8 }}>
+    <div class="masonry" use:masonry={{ minColWidth: 300, colGap: 16, rowGap: 16 }}>
       {#each cards as c (c.id)}
         <div id={`card-${c.id}`} class:card-highlight={store.highlightCardId === c.id}>
           <CardItem card={c} folderId={folder.id} />

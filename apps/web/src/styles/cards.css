@@ -22,12 +22,13 @@
   background: var(--panel-2); border: 1px solid var(--border); color: var(--muted);
 }
 
-/* Layout tipo Pinterest: columnas empaquetadas sin huecos (acción `masonry`) */
-.masonry {
-  display: grid;
-  grid-template-columns: repeat(var(--masonry-cols, 1), minmax(0, 1fr));
-  column-gap: 14px;
-  row-gap: 8px;
-  align-items: start;
+/* Layout tipo Pinterest: posicionamiento absoluto calculado por la acción `masonry` */
+.masonry { position: relative; width: 100%; }
+.masonry-item {
+  position: absolute; top: 0; left: 0;
+  will-change: transform;
 }
-.masonry > * { min-width: 0; }
+.masonry-item > * { height: 100%; }
+@media (prefers-reduced-motion: no-preference) {
+  .masonry-item { transition: transform .18s ease; }
+}

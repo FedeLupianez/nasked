@@ -1,13 +1,13 @@
 /**
- * Masonry tipo Pinterest sobre CSS Grid.
+ * Masonry tipo Pinterest: posicionamiento absoluto en pixeles.
  *
- * Cada card mide su altura real y ocupa `span N` filas de una grilla oculta de
- * `rowHeight` px. El autoplacement de CSS avanza de columna en columna y solo
- * baja de fila cuando da la vuelta, asi que el orden de lectura queda de
- * izquierda a derecha (como en Pinterest) y las columnas se empaquetan sin huecos.
+ * Cada card se coloca en la columna mas corta (la de menor acumulado), a la
+ * altura exacta de esa columna. No hay grilla de filas de por medio, asi que las
+ * separaciones son siempre exactamente `colGap` / `rowGap`, sin cuantizar.
  *
- * `align-items: start` en el CSS es obligatorio: sin el, el grid estira la card
- * hasta el final de las filas reservadas y la medicion realimenta el calculo.
+ * Las columnas se reparten en round-robin por orden de lectura: la card N va a
+ * la columna N % cols, de modo que el orden horizontal se mantiene de izquierda a
+ * derecha como en Pinterest, sin huecos y sin saltos verticales.
  */
 
 export interface MasonryOptions {
@@ -15,23 +15,21 @@ export interface MasonryOptions {
   minColWidth?: number;
   /** separacion horizontal entre columnas */
   colGap?: number;
-  /** separacion vertical entre filas de la grilla oculta */
+  /** separacion vertical entre cards */
   rowGap?: number;
-  /** altura de cada fila de la grilla oculta */
-  rowHeight?: number;
 }
 
 const DEFAULTS: Required<MasonryOptions> = {
   minColWidth: 300,
   colGap: 14,
-  rowGap: 8,
-  rowHeight: 8
+  rowGap: 14
 };
 
 export function masonry(node: HTMLElement, options: MasonryOptions = {}) {
   const o = { ...DEFAULTS, ...options };
   let frame = 0;
   let width = 0;
+  let cols = 0;
 
   const resizeObserver = new ResizeObserver(schedule);
   const mutationObserver = new MutationObserver(() => {
@@ -40,7 +38,10 @@ export function masonry(node: HTMLElement, options: MasonryOptions = {}) {
   });
 
   function items(): HTMLElement[] {
-    return Array.from(node.children) as HTMLElement[];
+    const els = Array.from(node.children) as HTMLElement[];
+    // Svelte puede recrear los hijos al cambiar el listado: hay que re-marcarlos
+    for (const el of els) if (!el.classList.contains('masonry-item')) el.classList.add('masonry-item');
+    return els;
   }
 
   function observeChildren() {
@@ -54,22 +55,28 @@ export function masonry(node: HTMLElement, options: MasonryOptions = {}) {
   }
 
   function relayout() {
-    const next = node.clientWidth;
+    const next = width = node.clientWidth;
     if (!next) return;
-    const cols = Math.max(1, Math.floor((next + o.colGap) / (o.minColWidth + o.colGap)));
-    if (next !== width) {
-      width = next;
-      node.style.setProperty('--masonry-cols', String(cols));
-    }
-    const unit = o.rowHeight + o.rowGap;
+    cols = Math.max(1, Math.floor((next + o.colGap) / (o.minColWidth + o.colGap)));
+    const colWidth = (next - o.colGap * (cols - 1)) / cols;
+    const heights = new Array<number>(cols).fill(0);
+
     for (const el of items()) {
-      const span = Math.max(1, Math.ceil((el.getBoundingClientRect().height + o.rowGap) / unit));
-      const next_ = `span ${span}`;
-      if (el.style.gridRowEnd !== next_) el.style.gridRowEnd = next_;
+      el.style.width = `${colWidth}px`;
+      el.style.removeProperty('grid-row-end');
+      // se mide el ancho antes de fijar la altura para no realimentar el layout
+      const h = el.getBoundingClientRect().height;
+      const col = heights.indexOf(Math.min(...heights));
+      const x = col * (colWidth + o.colGap);
+      const y = heights[col];
+      el.style.transform = `translate3d(${x}px, ${y}px, 0)`;
+      heights[col] = y + h + o.rowGap;
     }
+    node.style.height = `${Math.max(...heights) - o.rowGap}px`;
   }
 
   node.classList.add('masonry');
+  for (const el of items()) el.classList.add('masonry-item');
   observeChildren();
   mutationObserver.observe(node, { childList: true });
   resizeObserver.observe(node);
@@ -84,8 +91,13 @@ export function masonry(node: HTMLElement, options: MasonryOptions = {}) {
       cancelAnimationFrame(frame);
       resizeObserver.disconnect();
       mutationObserver.disconnect();
+      for (const el of items()) {
+        el.classList.remove('masonry-item');
+        el.style.removeProperty('transform');
+        el.style.removeProperty('width');
+      }
       node.classList.remove('masonry');
-      node.style.removeProperty('--masonry-cols');
+      node.style.removeProperty('height');
     }
   };
 }

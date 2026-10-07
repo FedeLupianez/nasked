@@ -31,13 +31,15 @@
   });
 
   const unreadCount = $derived(
-    notifications.filter((n) => !store.reviewedNotifIds.includes(n.card.id)).length,
+    notifications.filter((n) => !store.reviewedNotifIds.includes(n.card.id))
+      .length,
   );
 
   function notifBucket(iso: string): string {
     const d = new Date(iso);
     const now = new Date();
-    const startOfDay = (x: Date) => new Date(x.getFullYear(), x.getMonth(), x.getDate()).getTime();
+    const startOfDay = (x: Date) =>
+      new Date(x.getFullYear(), x.getMonth(), x.getDate()).getTime();
     const diffDays = Math.round((startOfDay(now) - startOfDay(d)) / 86400000);
     if (diffDays <= 0) return "Hoy";
     if (diffDays === 1) return "Ayer";
@@ -95,10 +97,10 @@
     return () => clearInterval(t);
   });
   let time = $derived(
-    clock.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" })
+    clock.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" }),
   );
   let date = $derived(
-    clock.toLocaleDateString("es-AR", { day: "2-digit", month: "2-digit" })
+    clock.toLocaleDateString("es-AR", { day: "2-digit", month: "2-digit" }),
   );
 
   $effect(() => {
@@ -109,7 +111,7 @@
 <div class="shell">
   <aside class="sidebar">
     <div class="brand">
-      <img class="brand-logo" src="/NaskedLogo.png" alt="Nasked logo" />
+      <img class="brand-logo" src="/logo_light.svg" alt="Nasked logo" />
     </div>
     <h2 class="brand-name">{store.currentUser?.name ?? "Nasked"}</h2>
 
@@ -154,7 +156,10 @@
           {#each store.users as u (u.id)}
             <div class="member-row">
               <span class="member-avatar">{initials(u.name)}</span>
-              <span class="who">@{u.name.split(' ')[0].toLowerCase()} <b>| {u.role === 'ADMIN' ? 'admin' : 'usuario'}</b></span>
+              <span class="who"
+                >@{u.name.split(" ")[0].toLowerCase()}
+                <b>| {u.role === "ADMIN" ? "admin" : "usuario"}</b></span
+              >
             </div>
           {/each}
         </div>
@@ -170,13 +175,15 @@
       <button
         class="icon-btn"
         onclick={() => store.toggleTheme()}
-        title={store.theme === 'dark' ? 'Tema claro' : 'Tema oscuro'}
+        title={store.theme === "dark" ? "Tema claro" : "Tema oscuro"}
       >
-        {#if store.theme === 'dark'}<Moon size={19} />{:else}<Sun size={19} />{/if}
+        {#if store.theme === "dark"}<Moon size={19} />{:else}<Sun
+            size={19}
+          />{/if}
       </button>
       <button
         class="icon-btn"
-        onclick={() => (store.view = 'account')}
+        onclick={() => (store.view = "account")}
         title="Configuración"
       >
         <Settings size={19} />
@@ -187,9 +194,15 @@
   <div class="main">
     <div class="topbar">
       <span class="crumb">
-        <button class="crumb-link" onclick={() => (store.view = 'overview')}>Home</button>
-        {#if store.view !== 'overview'}
-          <span class="sep">/</span><button class="crumb-link" onclick={() => (store.view = store.view)}>{titles[store.view] ?? 'Home'}</button>
+        <button class="crumb-link" onclick={() => (store.view = "overview")}
+          >Home</button
+        >
+        {#if store.view !== "overview"}
+          <span class="sep">/</span><button
+            class="crumb-link"
+            onclick={() => (store.view = store.view)}
+            >{titles[store.view] ?? "Home"}</button
+          >
         {/if}
       </span>
       <span class="spacer"></span>
@@ -201,12 +214,20 @@
           onblur={() => (searchOpen = false)}
         />
       {:else}
-        <button class="icon-btn" title="Buscar" onclick={() => (searchOpen = true)}>
+        <button
+          class="icon-btn"
+          title="Buscar"
+          onclick={() => (searchOpen = true)}
+        >
           <Search size={18} />
         </button>
       {/if}
       <div class="bell-wrap">
-        <button class="icon-btn" title="Notificaciones" onclick={() => (notifOpen = !notifOpen)}>
+        <button
+          class="icon-btn"
+          title="Notificaciones"
+          onclick={() => (notifOpen = !notifOpen)}
+        >
           <Bell size={16} />
           {#if unreadCount > 0}
             <span class="bell-dot"></span>
@@ -218,7 +239,10 @@
             {#if unreadCount > 0}
               <button
                 class="notif-markall"
-                onclick={() => store.markAllNotifsReviewed(notifications.map((n) => n.card.id))}
+                onclick={() =>
+                  store.markAllNotifsReviewed(
+                    notifications.map((n) => n.card.id),
+                  )}
               >
                 Marcar todas como vistas
               </button>
@@ -240,7 +264,10 @@
                     notifOpen = false;
                   }}
                 >
-                  <span class="notif-bar" style="background:{notifColor(n.card.dueDate)}"></span>
+                  <span
+                    class="notif-bar"
+                    style="background:{notifColor(n.card.dueDate)}"
+                  ></span>
                   <span class="notif-body">
                     <b>
                       {#if !store.reviewedNotifIds.includes(n.card.id)}
@@ -248,7 +275,10 @@
                       {/if}
                       {n.card.title}
                     </b>
-                    <small>{getDueInfo(n.card.dueDate).label} · {n.folder.name}</small>
+                    <small
+                      >{getDueInfo(n.card.dueDate).label} · {n.folder
+                        .name}</small
+                    >
                   </span>
                 </button>
               {/each}
@@ -256,14 +286,16 @@
           </div>
         {/if}
       </div>
-      <span class="clock-pill">{time} <span style="color:var(--faint)">{date}</span></span>
+      <span class="clock-pill"
+        >{time} <span style="color:var(--faint)">{date}</span></span
+      >
     </div>
-    {#if store.view === 'overview'}
+    {#if store.view === "overview"}
       <HomeBanner />
     {/if}
     <div
       class="content"
-      class:content-banner={store.view === 'overview' && !!store.homeBannerUrl}
+      class:content-banner={store.view === "overview" && !!store.homeBannerUrl}
     >
       {@render children?.()}
     </div>

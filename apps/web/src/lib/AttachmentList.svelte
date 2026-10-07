@@ -29,10 +29,10 @@
   {#each attachments as a (a.id)}
     {@const url = urls[a.id]}
     {@const isImg = a.mime.startsWith('image/')}
-    <li>
+    <li class:has-image={isImg && url}>
       {#if isImg && url}
-        <a class="attach-thumb" href={url} target="_blank" rel="noreferrer" title="Ver {a.name}">
-          <img src={url} alt={a.name} />
+        <a class="attach-preview" href={url} target="_blank" rel="noreferrer" title="Ver {a.name}">
+          <img src={url} alt={a.name} loading="lazy" />
         </a>
       {:else}
         <span class="attach-icon"><FileText size={15} /></span>
@@ -63,12 +63,21 @@
     background: var(--bg); border: 1px solid var(--border);
     border-radius: 10px; padding: 7px 8px 7px 10px;
   }
-  .attach-thumb, .attach-icon {
+  /* con preview la fila se apila: la imagen ocupa el ancho de la card */
+  li.has-image { flex-wrap: wrap; align-items: flex-start; }
+  .attach-preview {
+    width: 100%; border-radius: 8px; overflow: hidden;
+    display: block; background: var(--panel-2); border-bottom: 1px solid var(--border);
+  }
+  .attach-preview img {
+    display: block; width: 100%; height: auto;
+    max-height: 320px; object-fit: cover;
+  }
+  .attach-icon {
     width: 30px; height: 30px; border-radius: 7px; flex-shrink: 0;
     display: flex; align-items: center; justify-content: center; overflow: hidden;
     background: var(--panel-2); border: 1px solid var(--border); color: var(--muted);
   }
-  .attach-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
   .attach-info { flex: 1; min-width: 0; }
   .attach-info b {
     display: block; font-size: 12.5px; font-weight: 600;

@@ -3,6 +3,7 @@
   import CardItem from './CardItem.svelte';
   import CardForm from './CardForm.svelte';
   import { getDueInfo } from './utils';
+  import { masonry } from './masonry';
   import {
     FolderOpen,
     Users,
@@ -95,7 +96,7 @@
       </p>
     </div>
   {:else}
-    <div class="grid">
+    <div class="masonry" use:masonry={{ minColWidth: 300, colGap: 14, rowGap: 8, rowHeight: 8 }}>
       {#each cards as c (c.id)}
         <div id={`card-${c.id}`} class:card-highlight={store.highlightCardId === c.id}>
           <CardItem card={c} folderId={folder.id} />

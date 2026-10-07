@@ -21,3 +21,13 @@
   font-size: 10px; padding: 2px 6px; border-radius: 999px;
   background: var(--panel-2); border: 1px solid var(--border); color: var(--muted);
 }
+
+/* Layout tipo Pinterest: columnas empaquetadas sin huecos (acción `masonry`) */
+.masonry {
+  display: grid;
+  grid-template-columns: repeat(var(--masonry-cols, 1), minmax(0, 1fr));
+  column-gap: 14px;
+  row-gap: 8px;
+  align-items: start;
+}
+.masonry > * { min-width: 0; }

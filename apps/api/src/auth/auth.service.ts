@@ -5,14 +5,12 @@ import { AccountsService } from '../accounts/accounts.service';
 import { JwtService } from '@nestjs/jwt';
 import { LoginDTO } from './dto/login.dto';
 import { verify } from 'argon2';
-import { InjectRepository } from '@nestjs/typeorm';
-import { RefreshTokens } from './refreshTokens.entity';
-import { Repository } from 'typeorm';
 import { createHash } from 'crypto';
 import { Payload, Tokens } from './dto/tokens.dto';
 import { ConfigService } from '@nestjs/config';
-import { stringify } from 'uuid';
 import { Accounts } from '../accounts/accounts.entity';
+import { RefreshTokensService } from './refresh-tokens.service';
+import { toUuidString } from '../common/uuid';
 
 const REFRESH_EXPIRATION = '7d';
 const REFRESH_ISSUER = 'nasked-refresh';
@@ -23,8 +21,7 @@ export class AuthService {
     private readonly accountService: AccountsService,
     private readonly jwtService: JwtService,
     private readonly config: ConfigService,
-    @InjectRepository(RefreshTokens)
-    private readonly tokensRepo: Repository<RefreshTokens>
+    private readonly tokensService: RefreshTokensService
   ) { }
 
   private get refreshSecret(): string {
@@ -36,8 +33,9 @@ export class AuthService {
     return createHash('sha256').update(token).digest();
   }
 
+  /** `id_account` es `binary(16)`; el `sub` del JWT va como UUID string. */
   accountSub(account: Accounts): string {
-    return stringify(account.id_account);
+    return toUuidString(account.id_account);
   }
 
   async generateTokens(payload: Payload): Promise<Tokens> {
@@ -47,11 +45,10 @@ export class AuthService {
       secret: this.refreshSecret,
       issuer: REFRESH_ISSUER
     });
-    const storedToken = this.tokensRepo.create({
-      tokenHashed: this.hashToken(refreshToken),
+    await this.tokensService.create({
+      tokenHashed: this.hashToken(refreshToken).toString('hex'),
       email: payload.email
     });
-    await this.tokensRepo.save(storedToken);
     return {
       access: accessToken,
       refresh: refreshToken
@@ -95,12 +92,16 @@ export class AuthService {
     } catch {
       throw new UnauthorizedException('Invalid token');
     }
-    const stored = await this.tokensRepo.findOne({
-      where: { tokenHashed: this.hashToken(token), email: payload.email }, relations: { account: true }
-    })
-    if (!stored) throw new UnauthorizedException('Refresh token revoked');
+    let stored;
+    try {
+      stored = await this.tokensService.findByHash(this.hashToken(token), payload.email);
+    } catch {
+      // Token valido pero ya rotado o revocado.
+      throw new UnauthorizedException('Refresh token revoked');
+    }
     const account = stored.account;
-    await this.tokensRepo.remove(stored);
+    // Rotacion: el refresh usado se revoca y se emite uno nuevo.
+    await this.tokensService.revoke(stored.tokenHashed, stored.email);
     const tokens = await this.generateTokens(payload);
     return {
       name: account.name,
@@ -108,5 +109,21 @@ export class AuthService {
       email: account.email,
       tokens: tokens
     }
+  }
+
+  /** Cierra la sesion del refresh token dado. */
+  async logout(token: string): Promise<boolean> {
+    let payload: Payload;
+    try {
+      payload = await this.jwtService.verifyAsync<Payload>(token, {
+        secret: this.refreshSecret,
+        issuer: REFRESH_ISSUER
+      });
+    } catch {
+      // Un token invalido no es motivo de error en logout: la sesion ya no sirve.
+      return false;
+    }
+    await this.tokensService.revoke(this.hashToken(token), payload.email);
+    return true;
   }
 }

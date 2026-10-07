@@ -1,4 +1,4 @@
-import { Controller, Post, Res } from '@nestjs/common';
+import { Controller, Body, Post, Res } from '@nestjs/common';
 import { PublicSession } from '../auth/dto/profile.dto';
 import { registerCompanyDTO } from './dto/create.dto';
 import { CompaniesService } from './companies.service';
@@ -12,7 +12,7 @@ export class CompaniesController {
   ) { }
 
   @Post('register')
-  async registerCompany(register: registerCompanyDTO, @Res({ passthrough: true }) res): Promise<PublicSession> {
+  async registerCompany(@Body() register: registerCompanyDTO, @Res({ passthrough: true }) res): Promise<PublicSession> {
     await this.companyService.create(register.company);
     const session = await this.authService.register(register.user);
     return {

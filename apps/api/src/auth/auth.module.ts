@@ -6,6 +6,7 @@ import { AuthService } from './auth.service';
 import { AccountsModule } from '../accounts/accounts.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { RefreshTokens } from './refreshTokens.entity';
+import { RefreshTokensService } from './refresh-tokens.service';
 
 @Module({
   controllers: [AuthController],
@@ -20,6 +21,7 @@ import { RefreshTokens } from './refreshTokens.entity';
     }),
     TypeOrmModule.forFeature([RefreshTokens])
   ],
-  providers: [AuthService]
+  providers: [AuthService, RefreshTokensService],
+  exports: [AuthService, RefreshTokensService]
 })
 export class AuthModule { }

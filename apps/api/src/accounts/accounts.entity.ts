@@ -1,5 +1,6 @@
-import { BeforeInsert, Column, Entity, Index, OneToMany, PrimaryColumn } from "typeorm";
+import { BeforeInsert, Column, Entity, Index, ManyToMany, OneToMany, PrimaryColumn } from "typeorm";
 import { AccountsCompanies } from "./accounts-companies.entity";
+import { Folders } from "../elements/folders.entity";
 import { hash } from "argon2";
 import { newUuidBuffer } from "../common/uuid";
 
@@ -26,6 +27,9 @@ export class Accounts {
 
   @OneToMany(() => AccountsCompanies, (ac) => ac.account)
   accountsCompanies: AccountsCompanies[];
+
+  @ManyToMany(() => Folders, (f) => f.accounts)
+  folders: Folders[];
 
   @Column({ type: 'boolean', default: true })
   active: boolean;

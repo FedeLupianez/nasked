@@ -1,6 +1,7 @@
-import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, JoinColumn, JoinTable, ManyToMany, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { Companies } from "../companies/companies.entity";
 import { Cards } from "./cards.entity";
+import { Accounts } from "../accounts/accounts.entity";
 
 @Entity('Nasked_Folders')
 export class Folders {
@@ -26,6 +27,17 @@ export class Folders {
 
   @OneToMany(() => Cards, (c) => c.folder)
   cards: Cards[];
+
+  @ManyToMany(() => Accounts, (a) => a.folders)
+  @JoinTable({
+    name: 'Accounts_Folders',
+    joinColumn: { name: 'id_folder', referencedColumnName: 'id_folder' },
+    inverseJoinColumn: {
+      name: 'id_account',
+      referencedColumnName: 'id_account'
+    }
+  })
+  accounts: Accounts[];
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   created_at: Date;

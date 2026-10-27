@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Like, Repository } from 'typeorm';
+import { DataSource, Like, Repository } from 'typeorm';
 import { Folders } from './folders.entity';
 import { CreateFolderDTO, UpdateFolderDTO } from './dto/elements.dto';
 import { ListQuery } from '../common/dto/list-query.dto';
@@ -8,6 +8,7 @@ import { Companies } from '../companies/companies.entity';
 import { Cards } from './cards.entity';
 import { Fields } from './fields.entity';
 import { FieldsValues } from './fieldsValues.entity';
+import { Accounts } from '../accounts/accounts.entity';
 
 @Injectable()
 export class FoldersService {
@@ -19,7 +20,8 @@ export class FoldersService {
     @InjectRepository(Fields)
     private readonly fieldsRepo: Repository<Fields>,
     @InjectRepository(FieldsValues)
-    private readonly fieldsValuesRepo: Repository<FieldsValues>
+    private readonly fieldsValuesRepo: Repository<FieldsValues>,
+    private datasource: DataSource
   ) { }
 
   async create(dto: CreateFolderDTO): Promise<Folders> {
@@ -74,6 +76,15 @@ export class FoldersService {
     });
   }
 
+  async findByToken(folder_token: string): Promise<Folders> {
+    const folder = await this.foldersRepo.findOne({
+      where: { token: folder_token },
+      relations: { company: true, belongs_to: true, children: true, cards: true }
+    });
+    if (!folder) throw new NotFoundException('Folder not found');
+    return folder;
+  }
+
   async update(id_folder: number, changes: UpdateFolderDTO): Promise<Folders> {
     const folder = await this.findById(id_folder);
     if (changes.name !== undefined) folder.name = changes.name;
@@ -88,10 +99,6 @@ export class FoldersService {
     return await this.foldersRepo.save(folder);
   }
 
-  /**
-   * Borra la carpeta con todo su subarbol. Las FKs hacia abajo son NOT NULL,
-   * asi que el borrado va de hojas a raiz: valores -> campos -> tarjetas -> carpetas.
-   */
   async remove(id_folder: number): Promise<boolean> {
     await this.findById(id_folder);
     await this.cascadeRemove(id_folder);
@@ -139,5 +146,11 @@ export class FoldersService {
         });
       cursor = parent?.belongs_to?.id_folder;
     }
+  }
+
+  async joinToFolder(id_account: string, folder_token: string): Promise<boolean> {
+    const folder = await this.findByToken(folder_token);
+    await this.datasource.createQueryBuilder().relation(Folders, 'Accounts_Folders').of(folder.id_folder).add(id_account);
+    return true
   }
 }

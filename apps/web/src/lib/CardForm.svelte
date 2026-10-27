@@ -100,17 +100,17 @@
   ondrop={(e) => e.preventDefault()}
 >
   <div class="modal">
-    <h3 style="margin:0">Nueva tarjeta / actividad</h3>
+    <h3>Nueva tarjeta / actividad</h3>
     <p class="muted">Agrega infinitos campos NUMBER, TEXT, DATE, TIME. El vencimiento muestra el countdown.</p>
     <form onsubmit={save}>
       <div class="field"><label>Título *</label><input bind:value={title} placeholder="Ej: Entrega TP 3" required /></div>
       <div class="field"><label>Descripción</label><textarea bind:value={description} rows="2" placeholder="Detalles de la actividad…"></textarea></div>
       <div class="field"><label>Fecha y hora de vencimiento *</label><input type="datetime-local" bind:value={dueDate} required /></div>
 
-      <div style="margin-top:14px;display:flex;align-items:center;gap:8px">
-        <b style="font-size:13px" class="with-icon"><Paperclip size={13} /> Archivos adjuntos ({attachments.length}/{MAX_ATTACHMENTS})</b>
-        <span style="flex:1"></span>
-        {#if totalSize}<span class="muted" style="font-size:12px">{formatBytes(totalSize)}</span>{/if}
+      <div class="row row-top">
+        <b class="with-icon">Archivos adjuntos ({attachments.length}/{MAX_ATTACHMENTS})</b>
+        <span class="grow"></span>
+        {#if totalSize}<span class="muted">{formatBytes(totalSize)}</span>{/if}
         <button type="button" class="btn btn-ghost btn-small with-icon" onclick={() => fileInput.click()} disabled={attachments.length >= MAX_ATTACHMENTS}>
           <Plus size={13} /> Adjuntar
         </button>
@@ -147,7 +147,7 @@
               <Paperclip size={13} />
               <span class="attach-name">{a.name}</span>
               <span class="type-tag">{a.mime}</span>
-              <span class="muted" style="font-size:11.5px">{formatBytes(a.size)}</span>
+              <span class="muted">{formatBytes(a.size)}</span>
               <button type="button" class="btn btn-danger btn-small icon-btn" onclick={() => removeAttachmentAt(a.id)} title="Quitar archivo">
                 <X size={13} />
               </button>
@@ -156,9 +156,9 @@
         </ul>
       {/if}
 
-      <div style="margin-top:14px;display:flex;align-items:center;gap:8px">
-        <b style="font-size:13px">Campos personalizados ({fields.length}) — infinitos</b>
-        <span style="flex:1"></span>
+      <div class="row row-top">
+        <b>Campos personalizados ({fields.length}) — infinitos</b>
+        <span class="grow"></span>
         <button type="button" class="btn btn-ghost btn-small with-icon" onclick={addField}><Plus size={13} /> Agregar campo</button>
       </div>
 
@@ -190,9 +190,9 @@
         </div>
       {/each}
 
-      {#if error}<div class="error" style="margin-top:10px">{error}</div>{/if}
+      {#if error}<div class="error mt10">{error}</div>{/if}
 
-      <div class="row" style="margin-top:16px;justify-content:flex-end">
+      <div class="row row-end mt16">
         <button type="button" class="btn btn-ghost" onclick={onclose}>Cancelar</button>
         <button type="submit" class="btn btn-primary" disabled={saving}>{saving ? 'Guardando…' : 'Crear tarjeta'}</button>
       </div>
@@ -204,16 +204,16 @@
   .hidden-file { display: none; }
   .dropzone {
     margin-top: 8px; display: flex; align-items: center; gap: 8px;
-    border: 1px dashed var(--border-strong); border-radius: 10px;
+    border: 1px dashed var(--border-strong); border-radius: var(--radius-sm);
     padding: 12px; color: var(--muted); font-size: 12.5px; cursor: pointer;
     transition: border-color .15s, background .15s;
   }
-  .dropzone:hover, .dropzone.dragging { border-color: var(--text); background: var(--panel-2); }
+  .dropzone:hover, .dropzone.dragging { border-color: var(--accent); background: var(--accent-soft); color: var(--text); }
   .attach-list { list-style: none; margin: 8px 0 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
   .attach-list li {
     display: flex; align-items: center; gap: 8px;
     background: var(--bg); border: 1px solid var(--border);
-    border-radius: 10px; padding: 6px 8px 6px 10px; font-size: 12.5px;
+    border-radius: var(--radius-sm); padding: 6px 8px 6px 10px; font-size: 12.5px;
   }
   .attach-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; }
 </style>

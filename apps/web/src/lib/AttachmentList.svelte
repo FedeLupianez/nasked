@@ -61,12 +61,12 @@
   .attach-list li {
     display: flex; align-items: center; gap: 9px;
     background: var(--bg); border: 1px solid var(--border);
-    border-radius: 10px; padding: 7px 8px 7px 10px;
+    border-radius: var(--radius-sm); padding: 7px 8px 7px 10px;
   }
   /* con preview la fila se apila: la imagen ocupa el ancho de la card */
   li.has-image { flex-wrap: wrap; align-items: flex-start; }
   .attach-preview {
-    width: 100%; border-radius: 8px; overflow: hidden;
+    width: 100%; border-radius: var(--radius-sm); overflow: hidden;
     display: block; background: var(--panel-2); border-bottom: 1px solid var(--border);
   }
   .attach-preview img {

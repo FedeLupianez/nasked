@@ -35,7 +35,7 @@
 
 <div class="home-card">
   <h3>Tareas pendientes de hoy</h3>
-  <button class="btn btn-ghost" style="margin-bottom:14px" onclick={() => (store.view = 'overview')}>
+  <button class="btn btn-ghost" onclick={() => (store.view = 'overview')}>
     <ArrowLeft size={15} /> Volver al Home
   </button>
   <div class="inner">

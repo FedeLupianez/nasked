@@ -30,8 +30,8 @@
   }
 </script>
 
-<div style="max-width:620px;display:flex;flex-direction:column;gap:12px">
-  <div class="panel" style="display:flex;gap:14px;align-items:center">
+<div class="page">
+  <div class="panel panel-row">
     {#if store.currentUser}
       <div
         class="avatar"
@@ -41,14 +41,14 @@
         {initials(store.currentUser.name)}
       </div>
       <div>
-        <b style="font-size:17px">{store.currentUser.name}</b><br />
-        <span class="muted">{store.currentUser.email}</span><br />
+        <b class="panel-title">{store.currentUser.name}</b><br />
+        <span class="panel-sub muted">{store.currentUser.email}</span><br />
         <span
           class="role-pill {store.currentUser.role === 'USER' ? 'user' : ''}"
           >{store.currentUser.role}</span
         >
         {#if store.currentUser.role === "USER"}
-          <span class="muted" style="font-size:12px">
+          <span class="u-meta muted">
             · {store.currentUser.joinedFolderIds.length} carpetas unidas</span
           >
         {/if}
@@ -73,14 +73,11 @@
         minlength="6"
       />
     </div>
-    {#if error}<div class="error" style="margin-top:10px">{error}</div>{/if}
-    {#if ok}<div
-        class="error"
-        style="margin-top:10px;background:rgba(16,185,129,.12);border-color:rgba(16,185,129,.4);color:#6ee7b7"
-      >
+    {#if error}<div class="error mt10">{error}</div>{/if}
+    {#if ok}<div class="notice-ok mt10">
         {ok}
       </div>{/if}
-    <div class="row" style="margin-top:12px">
+    <div class="row row-top">
       <button class="btn btn-primary" type="submit">Guardar cambios</button>
       <button
         class="btn btn-ghost with-icon"
@@ -104,28 +101,41 @@
           >
         </p>
       {:else}
-        {#each store.visibleFolders as f}
-          <div
-            style="display:flex;gap:8px;align-items:center;padding:8px 0;border-top:1px solid var(--border)"
-          >
-            <span class="folder-dot" style="background:{f.color}"></span>
-            <b style="font-size:13px">{f.name}</b>
-            <span class="folder-code">{f.code}</span>
-            <span style="flex:1"></span>
-            <button
-              class="btn btn-ghost btn-small"
-              onclick={() => {
-                store.selectedFolderId = f.id;
-                store.view = "folder-detail";
-              }}>Abrir</button
-            >
-            <button
-              class="btn btn-danger btn-small"
-              onclick={() => store.leaveFolder(f.id)}>Salir</button
-            >
-          </div>
-        {/each}
+        <div class="stack">
+          {#each store.visibleFolders as f}
+            <div class="member-line">
+              <span class="folder-dot" style="background:{f.color}"></span>
+              <b>{f.name}</b>
+              <span class="folder-code">{f.code}</span>
+              <span class="grow"></span>
+              <button
+                class="btn btn-ghost btn-small"
+                onclick={() => {
+                  store.selectedFolderId = f.id;
+                  store.view = "folder-detail";
+                }}>Abrir</button
+              >
+              <button
+                class="btn btn-danger btn-small"
+                onclick={() => store.leaveFolder(f.id)}>Salir</button
+              >
+            </div>
+          {/each}
+        </div>
       {/if}
     </div>
   {/if}
 </div>
+
+<style>
+  .page {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .panel {
+    width: 35rem;
+  }
+</style>

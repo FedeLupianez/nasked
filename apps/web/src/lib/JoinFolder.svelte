@@ -54,23 +54,22 @@
         maxlength="24"
         autocomplete="off"
         spellcheck="false"
-        style="font-family:var(--mono);text-transform:uppercase;letter-spacing:.06em;text-align:center"
+        class="code-input"
       />
     </div>
 
     {#if error}
-      <div class="error" style="margin-top:12px">{error}</div>
+      <div class="error mt10">{error}</div>
     {/if}
     {#if ok}
-      <div class="notice-ok" style="margin-top:12px">
+      <div class="notice-ok mt10">
         <Check size={14} />
         {ok}
       </div>
     {/if}
 
     <button
-      class="btn btn-primary with-icon"
-      style="margin-top:14px;width:100%"
+      class="btn btn-primary btn-block"
       type="submit"
       disabled={!canSubmit}
     >
@@ -110,10 +109,13 @@
 
 <style>
   .join {
+    width: 100%;
     max-width: 480px;
+    margin: 0 auto;
     display: flex;
     flex-direction: column;
     gap: 12px;
+    padding-top: 2rem;
   }
   .join-card h3 {
     margin-bottom: 4px;
@@ -122,16 +124,11 @@
     opacity: 0.45;
     cursor: not-allowed;
   }
-  .notice-ok {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    background: rgba(16, 185, 129, 0.12);
-    border: 1px solid rgba(16, 185, 129, 0.4);
-    color: #6ee7b7;
-    padding: 10px 12px;
-    border-radius: 10px;
-    font-size: 13px;
+  .code-input {
+    font-family: var(--mono);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    text-align: center;
   }
   .demo-list {
     list-style: none;
@@ -149,7 +146,7 @@
     text-align: left;
     background: var(--panel-2);
     border: 1px solid var(--border);
-    border-radius: 12px;
+    border-radius: var(--radius);
     padding: 11px 12px;
     color: var(--text);
     cursor: pointer;
@@ -182,15 +179,9 @@
     color: var(--green);
     flex-shrink: 0;
   }
-  :global(:root[data-theme="light"]) .notice-ok {
-    background: rgba(16, 185, 129, 0.12);
-    border-color: rgba(16, 185, 129, 0.45);
-    color: #047857;
-  }
   @media (max-width: 560px) {
     .demo-item {
       flex-wrap: wrap;
     }
   }
 </style>
-

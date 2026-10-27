@@ -37,7 +37,7 @@
   .banner-editor {
     display: flex; align-items: center; gap: 6px;
     background: var(--panel); border: 1px solid var(--border-strong);
-    border-radius: 10px; padding: 6px 8px 6px 10px;
+    border-radius: var(--radius-sm); padding: 6px 8px 6px 10px;
     width: 100%;
   }
   .be-icon { color: var(--muted); display: flex; flex-shrink: 0; }

@@ -30,10 +30,10 @@
 </script>
 
 <div class="card-item">
-  <div style="display:flex;gap:8px;align-items:flex-start">
-    <div style="flex:1;min-width:0">
-      <b style="font-size:14.5px">{card.title}</b>
-      {#if card.description}<div class="muted" style="font-size:13px;margin-top:2px">{card.description}</div>{/if}
+  <div class="card-head">
+    <div class="card-main">
+      <b class="card-title">{card.title}</b>
+      {#if card.description}<div class="card-desc muted">{card.description}</div>{/if}
     </div>
     {#if store.isAdmin}
       <button class="btn btn-danger btn-small icon-btn" onclick={del} title="Eliminar"><Trash2 size={14} /></button>
@@ -54,7 +54,7 @@
       {/each}
     </div>
   {:else}
-    <span class="muted" style="font-size:12px">Sin campos extra.</span>
+    <p class="card-note muted">Sin campos extra.</p>
   {/if}
 
   {#if card.attachments?.length}

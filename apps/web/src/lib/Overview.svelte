@@ -1,13 +1,7 @@
 <script lang="ts">
   import { store } from "./store.svelte";
   import { getDueInfo } from "./utils";
-  import {
-    Search,
-    ChevronRight,
-    Folder,
-    Layers,
-    Bell,
-  } from "lucide-svelte";
+  import { Search, ChevronRight, Folder, Layers, Bell } from "lucide-svelte";
 
   const DOW = ["dom", "lun", "mar", "mié", "jue", "vie", "sáb"];
 
@@ -25,7 +19,12 @@
   );
   let firstName = $derived(store.currentUser?.name.split(" ")[0] ?? "");
   let selectedDay = $state<Date | null>(null);
-  const STATUS_RANK: Record<string, number> = { overdue: 0, urgent: 1, soon: 2, ok: 3 };
+  const STATUS_RANK: Record<string, number> = {
+    overdue: 0,
+    urgent: 1,
+    soon: 2,
+    ok: 3,
+  };
   let dayItems = $derived.by(() => {
     if (!selectedDay) return [];
     const key = selectedDay.toDateString();
@@ -85,19 +84,26 @@
       .slice(0, 4),
   );
 
-  let notifFilter = $state<string>('Todos');
+  let notifFilter = $state<string>("Todos");
   function notifDayBucket(iso: string): string {
     const d = new Date(iso);
     const now = new Date();
-    const startOfDay = (x: Date) => new Date(x.getFullYear(), x.getMonth(), x.getDate()).getTime();
+    const startOfDay = (x: Date) =>
+      new Date(x.getFullYear(), x.getMonth(), x.getDate()).getTime();
     const diffDays = Math.round((startOfDay(now) - startOfDay(d)) / 86400000);
-    if (diffDays <= 0) return 'Hoy';
-    if (diffDays === 1) return 'Ayer';
-    if (diffDays < 7) return 'Esta semana';
-    if (diffDays < 14) return 'La semana pasada';
-    return 'Anteriores';
+    if (diffDays <= 0) return "Hoy";
+    if (diffDays === 1) return "Ayer";
+    if (diffDays < 7) return "Esta semana";
+    if (diffDays < 14) return "La semana pasada";
+    return "Anteriores";
   }
-  const NOTIF_FILTERS = ['Todos', 'Hoy', 'Ayer', 'Esta semana', 'La semana pasada'];
+  const NOTIF_FILTERS = [
+    "Todos",
+    "Hoy",
+    "Ayer",
+    "Esta semana",
+    "La semana pasada",
+  ];
 
   let notifications = $derived(
     cards
@@ -107,14 +113,17 @@
         due: getDueInfo(card.dueDate),
       }))
       .filter(({ due }) => due.status === "overdue" || due.status === "urgent")
-      .filter(({ card }) => notifFilter === 'Todos' || notifDayBucket(card.dueDate) === notifFilter)
+      .filter(
+        ({ card }) =>
+          notifFilter === "Todos" ||
+          notifDayBucket(card.dueDate) === notifFilter,
+      )
       .sort((a, b) => {
         const ra = STATUS_RANK[a.due.status] ?? 9;
         const rb = STATUS_RANK[b.due.status] ?? 9;
         if (ra !== rb) return ra - rb;
         return a.due.diffMs - b.due.diffMs;
-      })
-      .slice(0, 6),
+      }),
   );
 
   let results = $derived.by(() => {
@@ -146,165 +155,188 @@
   }
 </script>
 
-<section class="home-greet">
-  <h2>
-    {greeting}, {firstName}
-  </h2>
-  <p>
-    {#if pending === 0}
-      No hay vencimientos para hoy. Todo al día.
-    {:else}
-      <button class="link-like" onclick={() => (store.view = 'today')}>
-        Hay <b>{pending}</b>
-        {pending === 1 ? "tarea pendiente" : "tareas pendientes"} en tus carpetas.
-      </button>
-    {/if}
-  </p>
-</section>
+<div class="page">
+  <section class="home-greet">
+    <h2>
+      {greeting}, {firstName}
+    </h2>
+    <p>
+      {#if pending === 0}
+        No hay vencimientos para hoy. Todo al día.
+      {:else}
+        <button class="link-like" onclick={() => (store.view = "today")}>
+          Hay <b>{pending}</b>
+          {pending === 1 ? "tarea pendiente" : "tareas pendientes"} en tus carpetas.
+        </button>
+      {/if}
+    </p>
+  </section>
 
-<div class="home-search">
-  <Search size={19} />
-  <input
-    placeholder="Buscar tareas o documentos en todas las vistas..."
-    bind:value={store.search}
-  />
-</div>
-
-{#if query.trim()}
-  <div class="home-card" style="margin-bottom:22px">
-    <h3>Resultados para “{query.trim()}”</h3>
-    {#if !results.length}
-      <div class="home-empty">No encontramos nada.</div>
-    {:else}
-      <div class="inner">
-        {#each results as r (r.card.id)}
-          <button class="due-row" onclick={() => openFolder(r.folder.id)}>
-            <span class="t">{r.card.title}</span>
-            <span class="w">{r.folder.name}</span>
-            <ChevronRight size={15} />
-          </button>
-        {/each}
-      </div>
-    {/if}
+  <div class="home-search">
+    <Search size={19} />
+    <input
+      placeholder="Buscar tareas o documentos en todas las vistas..."
+      bind:value={store.search}
+    />
   </div>
-{/if}
 
-<div class="home-cols">
-  <div class="home-card">
-    <h3>Próximos Vencimientos</h3>
-    <div class="inner">
-      <div class="week">
-        {#each week as d (d.date.toISOString())}
-          <button
-            class="week-day"
-            class:today={d.today}
-            class:selected={selectedDay?.toDateString() === d.date.toDateString()}
-            title={`${d.dow} ${d.dom}`}
-            onclick={() => (selectedDay = selectedDay?.toDateString() === d.date.toDateString() ? null : d.date)}
-          >
-            <span class="dow">{d.dow}</span>
-            <span class="dom">{d.dom}</span>
-            <span class="week-dots">
-              {#each d.statuses.slice(0, 3) as s, i (i)}
-                <i class="dot-{s}"></i>
-              {/each}
-            </span>
-          </button>
-        {/each}
-      </div>
+  {#if query.trim()}
+    <div class="home-card home-results">
+      <h3>Resultados para “{query.trim()}”</h3>
+      {#if !results.length}
+        <div class="home-empty">No encontramos nada.</div>
+      {:else}
+        <div class="inner">
+          {#each results as r (r.card.id)}
+            <button class="due-row" onclick={() => openFolder(r.folder.id)}>
+              <span class="t">{r.card.title}</span>
+              <span class="w">{r.folder.name}</span>
+              <ChevronRight size={15} />
+            </button>
+          {/each}
+        </div>
+      {/if}
+    </div>
+  {/if}
 
-      {#if selectedDay}
-        <h4 style="margin:14px 0 6px;font-size:14px;font-weight:500;color:var(--muted)">
-          Vencen el {selectedDay.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' })}
-        </h4>
-        {#if !dayItems.length}
-          <div class="home-empty">Sin vencimientos ese día.</div>
+  <div class="home-cols">
+    <div class="home-card">
+      <h3>Próximos Vencimientos</h3>
+      <div class="inner">
+        <div class="week">
+          {#each week as d (d.date.toISOString())}
+            <button
+              class="week-day"
+              class:today={d.today}
+              class:selected={selectedDay?.toDateString() ===
+                d.date.toDateString()}
+              title={`${d.dow} ${d.dom}`}
+              onclick={() =>
+                (selectedDay =
+                  selectedDay?.toDateString() === d.date.toDateString()
+                    ? null
+                    : d.date)}
+            >
+              <span class="dow">{d.dow}</span>
+              <span class="dom">{d.dom}</span>
+              <span class="week-dots">
+                {#each d.statuses.slice(0, 3) as s, i (i)}
+                  <i class="dot-{s}"></i>
+                {/each}
+              </span>
+            </button>
+          {/each}
+        </div>
+
+        {#if selectedDay}
+          <h4 class="home-dayhead">
+            Vencen el {selectedDay.toLocaleDateString("es-ES", {
+              weekday: "long",
+              day: "numeric",
+              month: "long",
+            })}
+          </h4>
+          {#if !dayItems.length}
+            <div class="home-empty">Sin vencimientos ese día.</div>
+          {:else}
+            {#each dayItems as it (it.card.id)}
+              <button class="due-row" onclick={() => openFolder(it.folder.id)}>
+                <span class={`due ${getDueInfo(it.card.dueDate).status}`}
+                  >{getDueInfo(it.card.dueDate).short}</span
+                >
+                <span class="t">{it.card.title}</span>
+                <span class="w">{it.folder.name}</span>
+              </button>
+            {/each}
+          {/if}
+        {:else if !upcoming.length}
+          <div class="home-empty">Sin vencimientos próximos.</div>
         {:else}
-          {#each dayItems as it (it.card.id)}
-            <button class="due-row" onclick={() => openFolder(it.folder.id)}>
-              <span class={`due ${getDueInfo(it.card.dueDate).status}`}>{getDueInfo(it.card.dueDate).short}</span>
-              <span class="t">{it.card.title}</span>
-              <span class="w">{it.folder.name}</span>
+          {#each upcoming as u (u.card.id)}
+            <button class="due-row" onclick={() => openFolder(u.folder.id)}>
+              <span class={`due ${u.due.status}`}>{u.due.short}</span>
+              <span class="t">{u.card.title}</span>
+              <span class="w">{u.folder.name}</span>
             </button>
           {/each}
         {/if}
-      {:else if !upcoming.length}
-        <div class="home-empty">Sin vencimientos próximos.</div>
-      {:else}
-        {#each upcoming as u (u.card.id)}
-          <button class="due-row" onclick={() => openFolder(u.folder.id)}>
-            <span class={`due ${u.due.status}`}>{u.due.short}</span>
-            <span class="t">{u.card.title}</span>
-            <span class="w">{u.folder.name}</span>
+      </div>
+    </div>
+
+    <div class="home-card">
+      <h3>Notificaciones</h3>
+      <p class="notif-head">
+        <Bell size={14} />
+        {notifications.length} sin revisar
+      </p>
+      <div class="notif-filters">
+        {#each NOTIF_FILTERS as f (f)}
+          <button
+            class="notif-chip"
+            class:active={notifFilter === f}
+            onclick={() => (notifFilter = f)}
+          >
+            {f}
           </button>
         {/each}
-      {/if}
+      </div>
+      <div class="notif-list">
+        {#if !notifications.length}
+          <div class="home-empty">Sin novedades.</div>
+        {:else}
+          {#each notifications as n (n.card.id)}
+            <button class="notif" onclick={() => openFolder(n.folder.id)}>
+              <span
+                class="mark {n.due.status === 'overdue' ? 'overdue' : 'urgent'}"
+              ></span>
+              <span class="notif-text">
+                <span class="notif-title">{n.card.title}</span>
+                <small>{n.due.label} · {n.folder.name}</small>
+              </span>
+            </button>
+          {/each}
+        {/if}
+      </div>
     </div>
   </div>
 
-  <div class="home-card">
-    <h3>Notificaciones</h3>
-    <p style="margin:-12px 0 10px;font-size:13px;color:var(--muted);display:flex;align-items:center;gap:6px">
-      <Bell size={14} />
-      {notifications.length} sin revisar
-    </p>
-    <div class="notif-filters">
-      {#each NOTIF_FILTERS as f (f)}
-        <button
-          class="notif-chip"
-          class:active={notifFilter === f}
-          onclick={() => (notifFilter = f)}
-        >
-          {f}
-        </button>
-      {/each}
-    </div>
-    <div class="notif-list">
-      {#if !notifications.length}
-        <div class="home-empty">Sin novedades.</div>
-      {:else}
-        {#each notifications as n (n.card.id)}
-          <button class="notif" onclick={() => openFolder(n.folder.id)}>
-            <span
-              class="mark"
-              style="background:{n.due.status === 'overdue'
-                ? 'var(--red)'
-                : 'var(--amber)'}"
-            ></span>
-            <span>
-              {n.card.title}
-              <small>{n.due.label} · {n.folder.name}</small>
+  <hr class="home-rule" />
+
+  <section class="home-section">
+    <h3>Últimos accesos</h3>
+    {#if !recents.length}
+      <div class="home-empty">
+        Todavía no hay carpetas. Creá una o unite con un código.
+      </div>
+    {:else}
+      <div class="recents">
+        {#each recents as r (r.f.id)}
+          <button class="recent-card" onclick={() => openFolder(r.f.id)}>
+            <span class="with-icon"><Folder size={18} /></span>
+            <b>{r.f.name}</b>
+            <p>{r.f.description || "Sin descripción"}</p>
+            <span class="meta">
+              <Layers size={13} />
+              {r.cards} tareas · {r.f.code}
             </span>
           </button>
         {/each}
-      {/if}
-    </div>
-  </div>
+      </div>
+    {/if}
+  </section>
 </div>
 
-<hr class="home-rule" />
+<style>
+  .page {
+    width: 100%;
+    max-width: 100%;
+    padding: 0 16px;
+    box-sizing: border-box;
+  }
 
-<section class="home-section">
-  <h3>Últimos accesos</h3>
-  {#if !recents.length}
-    <div class="home-empty">
-      Todavía no hay carpetas. Creá una o unite con un código.
-    </div>
-  {:else}
-    <div class="recents">
-      {#each recents as r (r.f.id)}
-        <button class="recent-card" onclick={() => openFolder(r.f.id)}>
-          <span class="with-icon" style="color:var(--muted)"
-            ><Folder size={18} /></span
-          >
-          <b>{r.f.name}</b>
-          <p>{r.f.description || "Sin descripción"}</p>
-          <span class="meta">
-            <Layers size={13} />
-            {r.cards} tareas · {r.f.code}
-          </span>
-        </button>
-      {/each}
-    </div>
-  {/if}
-</section>
+  @media (min-width: 1400px) {
+    .page {
+      padding: 0 32px;
+    }
+  }
+</style>

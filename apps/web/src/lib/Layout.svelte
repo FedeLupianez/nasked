@@ -133,8 +133,7 @@
           onclick={() => (store.view = "folder-detail")}
         >
           <FolderOpen size={20} />
-          <span
-            style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis"
+          <span class="ellipsis"
             >{store.selectedFolder.name}</span
           >
         </button>
@@ -287,7 +286,7 @@
         {/if}
       </div>
       <span class="clock-pill"
-        >{time} <span style="color:var(--faint)">{date}</span></span
+        >{time} <span class="faint">{date}</span></span
       >
     </div>
     {#if store.view === "overview"}

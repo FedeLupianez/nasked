@@ -44,13 +44,6 @@
       aria-hidden="true"
       style="object-position: center {store.homeBannerPos}%"
     />
-    <img
-      class="home-banner-img-blur"
-      src={store.homeBannerUrl}
-      alt=""
-      aria-hidden="true"
-      style="object-position: center {store.homeBannerPos}%"
-    />
     {#if repositioning}
       <div
         class="banner-drag"
@@ -111,16 +104,17 @@
   .reposition-pop {
     display: flex; align-items: center; gap: 10px;
     background: var(--panel); border: 1px solid var(--border-strong);
-    border-radius: 10px; padding: 8px 12px;
+    border-radius: var(--radius-sm); padding: 8px 12px;
     pointer-events: auto;
   }
   .rp-label { display: flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--muted); white-space: nowrap; }
-  .reposition-pop input[type='range'] { flex: 1; min-width: 120px; accent-color: var(--text); }
+  .reposition-pop input[type='range'] { flex: 1; min-width: 120px; accent-color: var(--accent); }
   .rp-done {
     display: flex; align-items: center; gap: 5px;
-    background: var(--panel-2); border: 1px solid var(--border-strong);
-    color: var(--text); border-radius: 8px; padding: 5px 10px;
-    font-size: 13px; cursor: pointer; font-family: inherit;
+    background: var(--accent); border: 1px solid transparent;
+    color: var(--accent-contrast); border-radius: var(--radius-sm);
+    padding: 5px 10px;
+    font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit;
   }
-  .rp-done:hover { background: var(--border-strong); }
+  .rp-done:hover { background: var(--accent-hover); }
 </style>

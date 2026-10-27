@@ -288,7 +288,7 @@ class AppStore {
     return null;
   }
 
-  createFolder(name: string, description: string, color: string) {
+  createFolder(name: string, description: string, color: string, memberIds: string[] = []) {
     if (!name.trim()) return 'El nombre es requerido';
     const folder: Folder = {
       id: uid('f'),
@@ -296,11 +296,16 @@ class AppStore {
       description: description.trim(),
       color,
       code: makeFolderCode(name),
-      memberIds: [],
+      memberIds,
       cards: [],
       createdAt: new Date().toISOString()
     };
     this.folders.unshift(folder);
+    // add folder to selected users' joinedFolderIds
+    for (const uid of memberIds) {
+      const u = this.users.find((x) => x.id === uid);
+      if (u && !u.joinedFolderIds.includes(folder.id)) u.joinedFolderIds.push(folder.id);
+    }
     this.selectedFolderId = folder.id;
     this.view = 'folder-detail';
     this.persist();

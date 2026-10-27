@@ -2,27 +2,40 @@
 
 .card-item {
   background: var(--card); border: 1px solid var(--border);
-  border-radius: 12px; padding: 14px; display: flex; flex-direction: column; gap: 10px;
+  border-radius: var(--radius); padding: 14px;
+  display: flex; flex-direction: column; gap: 10px;
 }
+.card-item:hover { border-color: var(--border-strong); }
+.card-head { display: flex; gap: 10px; align-items: flex-start; }
+.card-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.card-title { font-size: 14.5px; font-weight: 600; letter-spacing: -0.01em; }
+.card-desc { font-size: 13px; }
+.card-note { font-size: 12px; margin: 0; }
+
 .due {
-  font-size: 12.5px; font-weight: 700; padding: 7px 10px; border-radius: 999px;
+  font-size: 12.5px; font-weight: 600; padding: 6px 10px; border-radius: 999px;
   display: inline-flex; align-items: center; gap: 6px; width: fit-content;
-  font-variant-numeric: tabular-nums;
+  font-variant-numeric: tabular-nums; letter-spacing: .01em;
 }
-.due.ok { background: #0e2b22; color: #6ee7b7; border: 1px solid #1d5343; }
-.due.soon { background: #2e2409; color: #fcd34d; border: 1px solid #5c450d; }
-.due.urgent { background: #33220c; color: #fdba74; border: 1px solid #6b3d10; }
-.due.overdue { background: #331313; color: #fca5a5; border: 1px solid #6b2626; }
+.due.ok { background: var(--ok-bg); color: var(--ok-fg); border: 1px solid var(--ok-bd); }
+.due.soon { background: var(--soon-bg); color: var(--soon-fg); border: 1px solid var(--soon-bd); }
+.due.urgent { background: var(--urgent-bg); color: var(--urgent-fg); border: 1px solid var(--urgent-bd); }
+.due.overdue { background: var(--over-bg); color: var(--over-fg); border: 1px solid var(--over-bd); }
+
 .kv { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-.kv div { background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 8px 10px; }
+.kv div {
+  background: var(--panel-2); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 8px 10px;
+}
 .kv small { color: var(--muted); font-size: 11px; display: flex; gap: 6px; align-items: center; }
 .kv b { font-size: 13px; font-weight: 600; display: block; margin-top: 2px; word-break: break-word; }
 .type-tag {
-  font-size: 10px; padding: 2px 6px; border-radius: 999px;
-  background: var(--panel-2); border: 1px solid var(--border); color: var(--muted);
+  font-size: 10px; padding: 2px 8px; border-radius: 999px;
+  background: var(--accent-soft); border: 1px solid transparent; color: var(--accent);
+  font-weight: 600; letter-spacing: .03em;
 }
 
-/* Layout tipo Pinterest: posicionamiento absoluto calculado por la acción `masonry` */
+/* Layout tipo masonry: posicionamiento absoluto calculado por la acción `masonry` */
 .masonry { position: relative; width: 100%; }
 .masonry-item {
   position: absolute; top: 0; left: 0;

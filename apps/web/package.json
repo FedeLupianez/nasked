@@ -5,7 +5,11 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:local": "vite --mode dev_local",
+    "dev:api": "vite --mode dev_api",
     "build": "vite build",
+    "build:local": "vite build --mode dev_local",
+    "build:api": "vite build --mode dev_api",
     "preview": "vite preview",
     "check": "svelte-check --tsconfig ./tsconfig.app.json && tsc -p tsconfig.node.json"
   },

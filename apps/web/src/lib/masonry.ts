@@ -34,7 +34,7 @@ export function isPositioned(el: HTMLElement): boolean {
 }
 
 export function masonry(node: HTMLElement, options: MasonryOptions = {}) {
-  const o: MasonryOptions = { ...DEFAULTS, ...options };
+  const o: Required<MasonryOptions> = { ...DEFAULTS, ...options } as Required<MasonryOptions>;
   let frame = 0;
 
   const resizeObserver = new ResizeObserver(schedule);

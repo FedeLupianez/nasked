@@ -65,7 +65,7 @@
         u.joinedFolderIds.push(folder.id);
       }
     }
-    store.persist();
+    store.persistLocalData();
     showMemberManager = false;
   }
 

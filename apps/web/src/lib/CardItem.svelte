@@ -20,12 +20,8 @@
 
   async function del() {
     if (!confirm(`¿Eliminar tarjeta "${card.title}"?`)) return;
-    const f = store.folders.find((x) => x.id === folderId);
-    if (f) {
-      f.cards = f.cards.filter((c) => c.id !== card.id);
-      store.persist();
-      for (const a of card.attachments ?? []) await deleteAttachment(a);
-    }
+    await store.deleteCard(folderId, card.id);
+    for (const a of card.attachments ?? []) await deleteAttachment(a);
   }
 </script>
 

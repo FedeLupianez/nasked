@@ -38,9 +38,9 @@
     ),
   );
 
-  function create(e: Event) {
+  async function create(e: Event) {
     e.preventDefault();
-    error = store.createFolder(name, description, color, selectedMemberIds);
+    error = await store.createFolder(name, description, color, selectedMemberIds);
     if (!error) {
       name = "";
       description = "";

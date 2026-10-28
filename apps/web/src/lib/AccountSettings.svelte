@@ -17,11 +17,11 @@
     }
   });
 
-  function save(e: Event) {
+  async function save(e: Event) {
     e.preventDefault();
     error = null;
     ok = null;
-    const err = store.updateAccount(name, email, newPassword);
+    const err = await store.updateAccount(name, email, newPassword);
     if (err) error = err;
     else {
       ok = "Cuenta actualizada correctamente";

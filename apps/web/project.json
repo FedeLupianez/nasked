@@ -12,10 +12,42 @@
       ],
       "options": {
         "outputPath": "dist/apps/web"
+      },
+      "configurations": {
+        "local": {
+          "mode": "dev_local"
+        },
+        "api": {
+          "mode": "dev_api"
+        }
+      }
+    },
+    "dev": {
+      "executor": "@nx/vite:dev-server",
+      "options": {
+        "buildTarget": "web:build"
+      },
+      "configurations": {
+        "local": {
+          "mode": "dev_local"
+        },
+        "api": {
+          "mode": "dev_api"
+        }
       }
     },
     "serve": {
+      "executor": "@nx/vite:dev-server",
+      "options": {
+        "buildTarget": "web:build"
+      },
       "configurations": {
+        "local": {
+          "mode": "dev_local"
+        },
+        "api": {
+          "mode": "dev_api"
+        },
         "production": {}
       }
     },

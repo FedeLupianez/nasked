@@ -76,20 +76,15 @@
     const clean = fields
       .filter((f) => f.label.trim() !== '')
       .map((f) => ({ id: f.id, label: f.label.trim(), type: f.type, value: f.value }));
-    const folder = store.folders.find((f) => f.id === folderId);
-    if (!folder) { error = 'Carpeta no encontrada'; return; }
     saving = true;
-    folder.cards.unshift({
-      id: uid('c'),
+    error = await store.createCard(folderId, {
       title: title.trim(),
       description: description.trim(),
       dueDate: new Date(dueDate).toISOString(),
-      fields: clean,
-      attachments,
-      createdAt: new Date().toISOString()
+      fields: clean
     });
-    store.persist();
-    onclose();
+    if (!error) onclose();
+    saving = false;
   }
 </script>
 

@@ -9,13 +9,21 @@
   let showPw = $state(false);
   let role: "USER" | "ADMIN" = $state("USER");
   let error = $state<string | null>(null);
+  let submitting = $state(false);
 
-  function submit(e: Event) {
+  async function submit(e: Event) {
     e.preventDefault();
-    error =
-      mode === "login"
-        ? store.login(email, password)
-        : store.register(name, email, password, role);
+    if (submitting) return;
+    submitting = true;
+    error = null;
+    try {
+      error =
+        mode === "login"
+          ? await store.login(email, password)
+          : await store.register(name, email, password, role);
+    } finally {
+      submitting = false;
+    }
   }
 </script>
 

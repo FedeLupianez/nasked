@@ -24,12 +24,12 @@
     ok = null;
   }
 
-  function join(e: Event) {
+  async function join(e: Event) {
     e.preventDefault();
     error = null;
     ok = null;
     if (!canSubmit) return;
-    const err = store.joinByCode(code);
+    const err = await store.joinByCode(code);
     if (err) error = err;
     else {
       ok = "¡Te uniste correctamente!";

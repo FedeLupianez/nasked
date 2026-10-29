@@ -1,0 +1,5 @@
+id_plan,name,description,employees,active
+1,Free,"Basic plan for small teams",5,1
+2,Pro,"Professional plan for growing teams",25,1
+3,Enterprise,"Enterprise plan for large organizations",100,1
+4,Custom,"Custom plan with tailored features",0,1

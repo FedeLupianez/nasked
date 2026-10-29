@@ -1,0 +1,11 @@
+id_folder,token,name,id_company,belong_id,created_at,description,color
+1,FLD-001,"General",1,NULL,"2024-01-15 10:00:00","General folder for company documents",#737373
+2,FLD-002,"Projects",1,1,"2024-01-16 11:00:00","Project related documents",#0891B2
+3,FLD-003,"Finance",1,1,"2024-01-17 12:00:00","Financial documents and reports",#65A30D
+4,FLD-004,"HR",1,1,"2024-01-18 13:00:00","Human resources documents",#E11D48
+5,FLD-005,"General",2,NULL,"2024-01-20 10:00:00","General folder for company documents",#737373
+6,FLD-006,"Projects",2,5,"2024-01-21 11:00:00","Project related documents",#0891B2
+7,FLD-007,"General",3,NULL,"2024-01-22 10:00:00","General folder for company documents",#737373
+8,FLD-008,"General",4,NULL,"2024-01-23 10:00:00","General folder for company documents",#737373
+9,FLD-009,"General",5,NULL,"2024-01-24 10:00:00","General folder for company documents",#737373
+10,FLD-010,"General",6,NULL,"2024-01-25 10:00:00","General folder for company documents",#737373

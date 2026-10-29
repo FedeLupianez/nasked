@@ -1,0 +1,15 @@
+id_permission,permission
+1,read:companies
+2,write:companies
+3,delete:companies
+4,read:accounts
+5,write:accounts
+6,delete:accounts
+7,read:bills
+8,write:bills
+9,delete:bills
+10,read:elements
+11,write:elements
+12,delete:elements
+13,manage:roles
+14,manage:permissions

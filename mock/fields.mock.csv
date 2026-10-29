@@ -1,0 +1,23 @@
+id_field,id_card,name,required,options,type
+1,1,"Budget Amount",1,"{}",0
+2,1,"Start Date",1,"{}",2
+3,1,"End Date",1,"{}",2
+4,1,"Priority",0,"{\"values\":[\"Low\",\"Medium\",\"High\"]}",1
+5,2,"Department",1,"{}",1
+6,2,"Approver",1,"{}",1
+7,2,"Amount",1,"{}",0
+8,3,"Position",1,"{}",1
+9,3,"Experience Level",0,"{\"values\":[\"Junior\",\"Mid\",\"Senior\"]}",1
+10,3,"Salary Range",0,"{}",1
+11,4,"Design Tool",0,"{\"values\":[\"Figma\",\"Sketch\",\"Adobe XD\"]}",1
+12,4,"Pages to Redesign",1,"{}",0
+13,5,"Endpoints Covered",1,"{}",0
+14,5,"Documentation Format",0,"{\"values\":[\"OpenAPI\",\"Markdown\",\"Postman\"]}",1
+15,6,"Audit Type",1,"{\"values\":[\"Internal\",\"External\",\"Penetration\"]}",1
+16,6,"Compliance Standard",0,"{\"values\":[\"SOC2\",\"ISO27001\",\"GDPR\"]}",1
+17,7,"Client Name",1,"{}",1
+18,7,"Contract Value",1,"{}",0
+19,7,"Start Date",1,"{}",2
+20,8,"Campaign Name",1,"{}",1
+21,8,"Budget",1,"{}",0
+22,8,"Target Audience",1,"{}",1

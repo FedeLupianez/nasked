@@ -1,0 +1,31 @@
+id_company,name,logo,created_at,status,id_plan
+1,"TechNova Solutions","https://cdn.example.com/logos/technova.png","2023-01-15","1",1
+2,"Apex Dynamics","https://cdn.example.com/logos/apex.png","2023-02-20","1",2
+3,"BlueHorizon Inc","https://cdn.example.com/logos/bluehorizon.png","2023-03-10","1",1
+4,"Catalyst Systems","https://cdn.example.com/logos/catalyst.png","2023-04-05","2",3
+5,"Driftwood Labs","https://cdn.example.com/logos/driftwood.png","2023-05-12","1",2
+6,"Echo Valley Tech","https://cdn.example.com/logos/echovalley.png","2023-06-18","1",1
+7,"Falcon Ridge","https://cdn.example.com/logos/falconridge.png","2023-07-22","0",1
+8,"Greenfield Analytics","https://cdn.example.com/logos/greenfield.png","2023-08-30","1",3
+9,"Harbor Digital","https://cdn.example.com/logos/harbor.png","2023-09-14","1",2
+10,"Ironclad Security","https://cdn.example.com/logos/ironclad.png","2023-10-01","1",3
+11,"Jade Cloud Services","https://cdn.example.com/logos/jadecloud.png","2023-10-28","2",1
+12,"Kinetic Energy Co","https://cdn.example.com/logos/kinetic.png","2023-11-15","1",2
+13,"Lunar Logic","https://cdn.example.com/logos/lunarlogic.png","2023-12-03","1",1
+14,"Meridian Maps","https://cdn.example.com/logos/meridian.png","2024-01-08","1",2
+15,"Nebula Networks","https://cdn.example.com/logos/nebula.png","2024-01-25","0",3
+16,"Orbit Operations","https://cdn.example.com/logos/orbit.png","2024-02-12","1",1
+17,"Prism Data","https://cdn.example.com/logos/prism.png","2024-02-28","1",2
+18,"Quantum Quotient","https://cdn.example.com/logos/quantum.png","2024-03-15","1",3
+19,"Ripple Effect","https://cdn.example.com/logos/ripple.png","2024-03-30","2",1
+20,"Stellar Software","https://cdn.example.com/logos/stellar.png","2024-04-18","1",2
+21,"Tidal Technologies","https://cdn.example.com/logos/tidal.png","2024-05-05","1",1
+22,"Unity Systems","https://cdn.example.com/logos/unity.png","2024-05-22","1",3
+23,"Vertex Ventures","https://cdn.example.com/logos/vertex.png","2024-06-10","0",2
+24,"Waveform Wireless","https://cdn.example.com/logos/waveform.png","2024-06-28","1",1
+25,"Xenon Labs","https://cdn.example.com/logos/xenon.png","2024-07-15","1",2
+26,"Yield Yield","https://cdn.example.com/logos/yield.png","2024-08-01","1",3
+27,"Zenith Zone","https://cdn.example.com/logos/zenith.png","2024-08-20","2",1
+28,"Alpha Analytics","https://cdn.example.com/logos/alpha.png","2024-09-05","1",2
+29,"Beta Bridge","https://cdn.example.com/logos/beta.png","2024-09-22","1",1
+30,"Gamma Gateway","https://cdn.example.com/logos/gamma.png","2024-10-10","1",3

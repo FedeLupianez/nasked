@@ -1,7 +1,8 @@
 /** Proveedor de datos abstracto para soportar modo local y API. */
-import type { User, Folder, CardItem, Role } from './types';
+import type { Attachment, User, Folder, CardItem, Role, SubCard } from './types';
 import { uid, makeFolderCode } from './utils';
 import { isApiMode } from './config';
+import { makeContratosFolder } from './seed-data';
 import * as api from './api';
 
 export interface DataProvider {
@@ -24,7 +25,7 @@ export interface DataProvider {
   leaveFolder(id: string): Promise<void>;
 
   // Cards
-  createCard(folderId: string, data: { title: string; description: string; dueDate: string; fields: CardItem['fields'] }): Promise<CardItem>;
+  createCard(folderId: string, data: { title: string; description: string; dueDate: string; fields: CardItem['fields']; attachments?: Attachment[]; subcards?: SubCard[] }): Promise<CardItem>;
   updateCard(folderId: string, cardId: string, data: Partial<CardItem>): Promise<CardItem>;
   deleteCard(folderId: string, cardId: string): Promise<void>;
 
@@ -66,6 +67,7 @@ class LocalDataProvider implements DataProvider {
     const now = Date.now();
     const inHours = (h: number) => new Date(now + h * 3600 * 1000).toISOString();
     return [
+      makeContratosFolder(now),
       {
         id: 'f_matematicas',
         name: 'Matemáticas 2026',
@@ -295,7 +297,7 @@ class LocalDataProvider implements DataProvider {
     throw new Error('leaveFolder not implemented in LocalDataProvider - use store.leaveFolder');
   }
 
-  async createCard(folderId: string, data: { title: string; description: string; dueDate: string; fields: CardItem['fields'] }): Promise<CardItem> {
+  async createCard(folderId: string, data: { title: string; description: string; dueDate: string; fields: CardItem['fields']; attachments?: Attachment[]; subcards?: SubCard[] }): Promise<CardItem> {
     const folders = this.getFoldersStorage();
     const folder = folders.find(f => f.id === folderId);
     if (!folder) throw new Error('Carpeta no encontrada');
@@ -305,6 +307,8 @@ class LocalDataProvider implements DataProvider {
       description: data.description,
       dueDate: data.dueDate,
       fields: data.fields,
+      attachments: data.attachments ?? [],
+      subcards: data.subcards ?? [],
       createdAt: new Date().toISOString()
     };
     folder.cards.unshift(card);
@@ -408,7 +412,7 @@ class ApiDataProvider implements DataProvider {
     return api.apiLeaveFolder(id);
   }
 
-  async createCard(folderId: string, data: { title: string; description: string; dueDate: string; fields: CardItem['fields'] }): Promise<CardItem> {
+  async createCard(folderId: string, data: { title: string; description: string; dueDate: string; fields: CardItem['fields']; attachments?: Attachment[]; subcards?: SubCard[] }): Promise<CardItem> {
     return api.apiCreateCard(folderId, data);
   }
 

@@ -22,6 +22,16 @@ export interface Attachment {
   addedAt: string;
 }
 
+export interface SubCard {
+  id: string;
+  title: string;
+  description: string;
+  fields: CustomField[];
+  createdAt: string;
+  /** archivos adjuntos (el binario vive en IndexedDB) */
+  attachments?: Attachment[];
+}
+
 export interface CardItem {
   id: string;
   title: string;
@@ -32,6 +42,8 @@ export interface CardItem {
   createdAt: string;
   /** archivos adjuntos (el binario vive en IndexedDB) */
   attachments?: Attachment[];
+  /** subtarjetas para agrupar información dentro de la tarjeta */
+  subcards?: SubCard[];
 }
 
 export interface Folder {

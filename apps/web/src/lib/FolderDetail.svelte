@@ -2,7 +2,8 @@
   import { store } from './store.svelte';
   import CardItem from './CardItem.svelte';
   import CardForm from './CardForm.svelte';
-  import { getDueInfo } from './utils';
+  import type { SubCard } from './types';
+  import { getDueInfo, uid } from './utils';
   import {
     Users,
     ArrowLeft,
@@ -18,6 +19,7 @@
     Paperclip,
     LayoutGrid,
     List,
+    Layers,
     X,
   } from 'lucide-svelte';
 
@@ -27,6 +29,8 @@
   let memberSelection = $state<string[]>([]);
   let query = $state('');
   let selectedCardId = $state<string | null>(null);
+  let editingCardId = $state<string | null>(null);
+  let subForm = $state<{ mode: 'create' | 'edit'; subId?: string } | null>(null);
   let layout: 'list' | 'grid' = $state('list');
 
   // usuarios de la empresa = rol USER
@@ -101,7 +105,12 @@
     return arr.filter(
       (c) =>
         c.title.toLowerCase().includes(q) ||
-        c.description.toLowerCase().includes(q),
+        c.description.toLowerCase().includes(q) ||
+        (c.subcards ?? []).some(
+          (s) =>
+            s.title.toLowerCase().includes(q) ||
+            s.description.toLowerCase().includes(q),
+        ),
     );
   });
 
@@ -119,6 +128,18 @@
       : null,
   );
 
+  let editingCard = $derived(
+    editingCardId
+      ? (folder?.cards.find((c) => c.id === editingCardId) ?? null)
+      : null,
+  );
+
+  let editingSubcard = $derived.by(() => {
+    const id = subForm?.subId;
+    if (subForm?.mode !== 'edit' || !id || !selectedCard) return null;
+    return selectedCard.subcards?.find((s) => s.id === id) ?? null;
+  });
+
   function toggleSort() {
     sort = sort === 'due' ? 'recent' : 'due';
   }
@@ -133,6 +154,43 @@
 
   function closeCard() {
     selectedCardId = null;
+    editingCardId = null;
+    subForm = null;
+  }
+
+  function openEditCard() {
+    if (selectedCard) editingCardId = selectedCard.id;
+  }
+
+  function openNewSubcard() {
+    subForm = { mode: 'create' };
+  }
+
+  function openEditSubcard(sub: SubCard) {
+    subForm = { mode: 'edit', subId: sub.id };
+  }
+
+  async function saveSubcard(data: {
+    title: string;
+    description: string;
+    fields: SubCard['fields'];
+    attachments: NonNullable<SubCard['attachments']>;
+  }): Promise<string | null> {
+    if (!folder || !selectedCard) return 'No hay una tarjeta seleccionada';
+    const current = selectedCard.subcards ?? [];
+    const subId = subForm?.mode === 'edit' ? subForm.subId : undefined;
+    const next: SubCard[] = subId
+      ? current.map((s) => (s.id === subId ? { ...s, ...data } : s))
+      : [{ id: uid('sc'), createdAt: new Date().toISOString(), ...data }, ...current];
+    return store.updateCard(folder.id, selectedCard.id, { subcards: next });
+  }
+
+  function handleEscape(e: KeyboardEvent) {
+    if (e.key !== 'Escape') return;
+    // Los formularios internos manejan su propio Escape y limpian adjuntos.
+    if (subForm || editingCardId || showForm) return;
+    if (showMemberManager) { showMemberManager = false; return; }
+    closeCard();
   }
 
   $effect(() => {
@@ -142,7 +200,7 @@
   });
 </script>
 
-<svelte:window onkeydown={(e) => { if (e.key === 'Escape') closeCard(); }} />
+<svelte:window onkeydown={handleEscape} />
 
 {#if !folder}
   <div class="panel">
@@ -242,6 +300,11 @@
                       <Paperclip size={12} /> {recent.attachments.length}
                     </span>
                   {/if}
+                  {#if recent.subcards?.length}
+                    <span class="file-count with-icon">
+                      <Layers size={12} /> {recent.subcards.length}
+                    </span>
+                  {/if}
                 </span>
               </button>
             </div>
@@ -279,6 +342,11 @@
                       <Paperclip size={12} /> {c.attachments.length}
                     </span>
                   {/if}
+                  {#if c.subcards?.length}
+                    <span class="file-count with-icon">
+                      <Layers size={12} /> {c.subcards.length}
+                    </span>
+                  {/if}
                 </span>
               </button>
             {/each}
@@ -306,6 +374,11 @@
                         <Paperclip size={12} /> {c.attachments.length}
                       </span>
                     {/if}
+                    {#if c.subcards?.length}
+                      <span class="file-count with-icon">
+                        <Layers size={12} /> {c.subcards.length}
+                      </span>
+                    {/if}
                   </span>
                   <ChevronRight size={16} class="chev" />
                 </button>
@@ -331,9 +404,31 @@
           <span class="card-modal-kicker with-icon"><FileText size={15} /> Detalle de tarjeta</span>
           <button class="icon-btn" onclick={closeCard} aria-label="Cerrar"><X size={18} /></button>
         </header>
-        <CardItem card={selectedCard} folderId={folder.id} />
+        <CardItem
+          card={selectedCard}
+          folderId={folder.id}
+          onedit={openEditCard}
+          onaddsubcard={openNewSubcard}
+          oneditsubcard={openEditSubcard}
+        />
       </div>
     </div>
+  {/if}
+
+  {#if editingCard}
+    <CardForm
+      folderId={folder.id}
+      card={editingCard}
+      onclose={() => (editingCardId = null)}
+    />
+  {/if}
+
+  {#if subForm && selectedCard}
+    <CardForm
+      subcard={editingSubcard ?? undefined}
+      onsave={saveSubcard}
+      onclose={() => (subForm = null)}
+    />
   {/if}
 
   {#if showForm}

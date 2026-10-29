@@ -1,15 +1,17 @@
 /** Store principal de la app - usa DataProvider para modo local/API. */
-import type { Folder, User } from './types';
+import type { Attachment, Folder, SubCard, User } from './types';
 import { uid, makeFolderCode } from './utils';
 import { deleteAttachment, clearAllAttachments } from './attachments';
 import { getDataProvider } from './data-provider';
 import { isApiMode } from './config';
+import { makeContratosFolder } from './seed-data';
 
 const SESSION_KEY = 'dash_session_v1';
 const THEME_KEY = 'dash_theme_v1';
 const HOME_BANNER_KEY = 'dash_home_banner_v1';
 const HOME_BANNER_POS_KEY = 'dash_home_banner_pos_v1';
 const REVIEWS_KEY = 'dash_reviewed_notifs_v1';
+const CONTRACT_SEED_KEY = 'dash_seed_contratos_v1';
 
 class AppStore {
   // Estado reactivo
@@ -98,6 +100,7 @@ class AppStore {
       const now = Date.now();
       const inHours = (h: number) => new Date(now + h * 3600 * 1000).toISOString();
       return [
+        makeContratosFolder(now),
         {
           id: 'f_matematicas', name: 'Matemáticas 2026', description: 'Actividades y entregas del curso. Únete con el código.',
           color: '#d4d4d4', code: 'MATE-2026', memberIds: ['u_user'], createdAt: new Date(now - 10 * 86400000).toISOString(),
@@ -129,6 +132,14 @@ class AppStore {
       const hasDemoUsers = Array.isArray(users) && users.some((u) => u.email === 'admin@demo.io');
       if (!hasDemoUsers || !Array.isArray(users) || users.length === 0) users = seedUsers();
       if (!Array.isArray(folders) || folders.length === 0) folders = seedFolders();
+
+      // Migración única: agrega la carpeta de contratos a instalaciones existentes.
+      if (localStorage.getItem(CONTRACT_SEED_KEY) !== '1') {
+        if (!folders.some((f) => f.name === 'Contratos de trabajo')) {
+          folders = [makeContratosFolder(), ...folders];
+        }
+        localStorage.setItem(CONTRACT_SEED_KEY, '1');
+      }
       return { users, folders };
     }
 
@@ -152,6 +163,7 @@ class AppStore {
     const now = Date.now();
     const inHours = (h: number) => new Date(now + h * 3600 * 1000).toISOString();
     this.folders = [
+      makeContratosFolder(now),
       {
         id: 'f_matematicas', name: 'Matemáticas 2026', description: 'Actividades y entregas del curso. Únete con el código.',
         color: '#d4d4d4', code: 'MATE-2026', memberIds: ['u_user'], createdAt: new Date(now - 10 * 86400000).toISOString(),
@@ -302,6 +314,9 @@ class AppStore {
     if (folder) {
       for (const card of folder.cards) {
         for (const a of card.attachments ?? []) void deleteAttachment(a);
+        for (const sub of card.subcards ?? []) {
+          for (const a of sub.attachments ?? []) void deleteAttachment(a);
+        }
       }
     }
     try {
@@ -357,7 +372,7 @@ class AppStore {
   }
 
   // ---- Card Actions ----
-  async createCard(folderId: string, data: { title: string; description: string; dueDate: string; fields: any[] }): Promise<string | null> {
+  async createCard(folderId: string, data: { title: string; description: string; dueDate: string; fields: any[]; attachments?: Attachment[]; subcards?: SubCard[] }): Promise<string | null> {
     try {
       const provider = getDataProvider();
       const card = await provider.createCard(folderId, data);
@@ -392,6 +407,13 @@ class AppStore {
       await provider.deleteCard(folderId, cardId);
     } catch {}
     const folder = this.folders.find(f => f.id === folderId);
+    const removed = folder?.cards.find(c => c.id === cardId);
+    if (removed) {
+      for (const a of removed.attachments ?? []) await deleteAttachment(a);
+      for (const sub of removed.subcards ?? []) {
+        for (const a of sub.attachments ?? []) await deleteAttachment(a);
+      }
+    }
     if (folder) folder.cards = folder.cards.filter(c => c.id !== cardId);
     this.persistLocalData();
   }
@@ -451,6 +473,7 @@ class AppStore {
     if (!isApiMode()) {
       localStorage.removeItem('dash_users_v2');
       localStorage.removeItem('dash_folders_v1');
+      localStorage.removeItem(CONTRACT_SEED_KEY);
       void clearAllAttachments();
     }
     this.loadDemoData();

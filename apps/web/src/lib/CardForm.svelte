@@ -1,24 +1,56 @@
 <script lang="ts">
-  import type { Attachment, FieldType } from './types';
+  import type { Attachment, CardItem, FieldType, SubCard } from './types';
   import { uid } from './utils';
   import { store } from './store.svelte';
   import { Plus, X, Paperclip } from 'lucide-svelte';
   import { saveAttachment, deleteAttachment, formatBytes, MAX_ATTACHMENTS, MAX_ATTACHMENT_SIZE } from './attachments';
 
-  let { folderId, onclose }: { folderId: string; onclose: () => void } = $props();
+  let {
+    folderId = '',
+    card,
+    subcard,
+    onsave,
+    onclose
+  }: {
+    folderId?: string;
+    card?: CardItem;
+    subcard?: SubCard;
+    onsave?: (data: { title: string; description: string; fields: SubCard['fields']; attachments: Attachment[] }) => Promise<string | null>;
+    onclose: () => void;
+  } = $props();
 
-  let title = $state('');
-  let description = $state('');
-  let dueDate = $state(new Date(Date.now() + 24 * 3600 * 1000).toISOString().slice(0, 16));
+  const isSubcard = !!subcard;
+  const isEdit = !!card || isSubcard;
+  const initialAttachments: Attachment[] = [...(card?.attachments ?? subcard?.attachments ?? [])];
+  const initialIds = new Set(initialAttachments.map((a) => a.id));
+
+  function toLocalInput(iso: string): string {
+    const d = new Date(iso);
+    const pad = (n: number) => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  }
+
+  let title = $state(card?.title ?? subcard?.title ?? '');
+  let description = $state(card?.description ?? subcard?.description ?? '');
+  let dueDate = $state(
+    card?.dueDate
+      ? toLocalInput(card.dueDate)
+      : new Date(Date.now() + 24 * 3600 * 1000).toISOString().slice(0, 16)
+  );
   let error = $state<string | null>(null);
   let saving = $state(false);
   let dragging = $state(false);
   let fileInput: HTMLInputElement;
 
   interface Draft { id: string; label: string; type: FieldType; value: string }
-  let fields: Draft[] = $state([{ id: uid('f'), label: '', type: 'TEXT', value: '' }]);
+  const sourceFields = card?.fields ?? subcard?.fields ?? [];
+  let fields: Draft[] = $state(
+    sourceFields.length
+      ? sourceFields.map((f) => ({ ...f }))
+      : [{ id: uid('f'), label: '', type: 'TEXT', value: '' }]
+  );
 
-  let attachments: Attachment[] = $state([]);
+  let attachments: Attachment[] = $state([...initialAttachments]);
   let totalSize = $derived(attachments.reduce((n, a) => n + a.size, 0));
 
   function addField() {
@@ -62,45 +94,103 @@
     addFiles(e.dataTransfer?.files ?? null);
   }
 
-  async function removeAttachmentAt(id: string) {
-    const att = attachments.find((a) => a.id === id);
+  function removeAttachmentAt(id: string) {
     attachments = attachments.filter((a) => a.id !== id);
-    if (att) await deleteAttachment(att);
+  }
+
+  async function handleClose() {
+    // Los archivos nuevos que no llegaron a guardarse no deben quedar huérfanos.
+    for (const a of attachments) {
+      if (!initialIds.has(a.id)) await deleteAttachment(a);
+    }
+    onclose();
   }
 
   async function save(e: Event) {
     e.preventDefault();
     if (saving) return;
     if (!title.trim()) { error = 'El título es requerido'; return; }
-    if (!dueDate) { error = 'La fecha de vencimiento es requerida'; return; }
+    if (!isSubcard && !dueDate) { error = 'La fecha de vencimiento es requerida'; return; }
     const clean = fields
       .filter((f) => f.label.trim() !== '')
       .map((f) => ({ id: f.id, label: f.label.trim(), type: f.type, value: f.value }));
-    saving = true;
-    error = await store.createCard(folderId, {
+
+    const payload: {
+      title: string;
+      description: string;
+      fields: Draft[];
+      attachments: Attachment[];
+      dueDate?: string;
+    } = {
       title: title.trim(),
       description: description.trim(),
-      dueDate: new Date(dueDate).toISOString(),
-      fields: clean
-    });
-    if (!error) onclose();
+      fields: clean,
+      attachments
+    };
+    const dueIso = !isSubcard ? new Date(dueDate).toISOString() : undefined;
+
+    saving = true;
+    if (onsave) {
+      error = await onsave({
+        title: payload.title,
+        description: payload.description,
+        fields: payload.fields,
+        attachments: payload.attachments
+      });
+    } else if (card) {
+      error = await store.updateCard(folderId, card.id, {
+        ...payload,
+        ...(dueIso ? { dueDate: dueIso } : {})
+      });
+    } else {
+      error = await store.createCard(folderId, {
+        ...payload,
+        dueDate: dueIso ?? new Date().toISOString()
+      });
+    }
     saving = false;
+
+    if (!error) {
+      // Recién ahora es seguro borrar los adjuntos que se quitaron.
+      for (const a of initialAttachments) {
+        if (!attachments.some((x) => x.id === a.id)) await deleteAttachment(a);
+      }
+      onclose();
+    }
   }
 </script>
 
+<svelte:window onkeydown={(e) => { if (e.key === 'Escape') handleClose(); }} />
+
 <div
   class="modal-back"
-  onclick={(e) => { if (e.target === e.currentTarget) onclose(); }}
+  onclick={(e) => { if (e.target === e.currentTarget) handleClose(); }}
   ondragover={(e) => e.preventDefault()}
   ondrop={(e) => e.preventDefault()}
 >
-  <div class="modal">
-    <h3>Nueva tarjeta / actividad</h3>
-    <p class="muted">Agrega infinitos campos NUMBER, TEXT, DATE, TIME. El vencimiento muestra el countdown.</p>
+  <div class="modal" onclick={(e) => e.stopPropagation()}>
+    <h3>
+      {#if isSubcard}
+        {subcard ? 'Editar subtarjeta' : 'Nueva subtarjeta'}
+      {:else if card}
+        Editar tarjeta
+      {:else}
+        Nueva tarjeta / actividad
+      {/if}
+    </h3>
+    <p class="muted">
+      {#if isSubcard}
+        Agrupa información relacionada dentro de esta tarjeta, por ejemplo un contrato o un acuerdo.
+      {:else}
+        Agrega infinitos campos NUMBER, TEXT, DATE, TIME. El vencimiento muestra el countdown.
+      {/if}
+    </p>
     <form onsubmit={save}>
-      <div class="field"><label>Título *</label><input bind:value={title} placeholder="Ej: Entrega TP 3" required /></div>
-      <div class="field"><label>Descripción</label><textarea bind:value={description} rows="2" placeholder="Detalles de la actividad…"></textarea></div>
-      <div class="field"><label>Fecha y hora de vencimiento *</label><input type="datetime-local" bind:value={dueDate} required /></div>
+      <div class="field"><label>Título *</label><input bind:value={title} placeholder={isSubcard ? 'Ej: Contrato de trabajo de Martin' : 'Ej: Entrega TP 3'} required /></div>
+      <div class="field"><label>Descripción</label><textarea bind:value={description} rows="2" placeholder="Detalles…"></textarea></div>
+      {#if !isSubcard}
+        <div class="field"><label>Fecha y hora de vencimiento *</label><input type="datetime-local" bind:value={dueDate} required /></div>
+      {/if}
 
       <div class="row row-top">
         <b class="with-icon">Archivos adjuntos ({attachments.length}/{MAX_ATTACHMENTS})</b>
@@ -188,8 +278,16 @@
       {#if error}<div class="error mt10">{error}</div>{/if}
 
       <div class="row row-end mt16">
-        <button type="button" class="btn btn-ghost" onclick={onclose}>Cancelar</button>
-        <button type="submit" class="btn btn-primary" disabled={saving}>{saving ? 'Guardando…' : 'Crear tarjeta'}</button>
+        <button type="button" class="btn btn-ghost" onclick={handleClose}>Cancelar</button>
+        <button type="submit" class="btn btn-primary" disabled={saving}>
+          {#if saving}
+            Guardando…
+          {:else if isEdit}
+            Guardar cambios
+          {:else}
+            Crear tarjeta
+          {/if}
+        </button>
       </div>
     </form>
   </div>

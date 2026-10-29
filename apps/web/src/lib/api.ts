@@ -1,6 +1,6 @@
 /** Cliente API simple para modo dev_api. */
 import { getApiBaseUrl } from './config';
-import type { User, Folder, CardItem, Role } from './types';
+import type { Attachment, User, Folder, CardItem, Role, SubCard } from './types';
 
 const API_BASE = getApiBaseUrl();
 
@@ -95,6 +95,8 @@ export async function apiCreateCard(
     description: string;
     dueDate: string;
     fields: CardItem['fields'];
+    attachments?: Attachment[];
+    subcards?: SubCard[];
   }
 ): Promise<CardItem> {
   return request<CardItem>(`/folders/${folderId}/cards`, {

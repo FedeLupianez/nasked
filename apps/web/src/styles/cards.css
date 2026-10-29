@@ -8,6 +8,7 @@
 .card-item:hover { border-color: var(--border-strong); }
 .card-head { display: flex; gap: 10px; align-items: flex-start; }
 .card-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.card-actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
 .card-title { font-size: 14.5px; font-weight: 600; letter-spacing: -0.01em; }
 .card-desc { font-size: 13px; }
 .card-note { font-size: 12px; margin: 0; }
@@ -34,6 +35,31 @@
   background: var(--accent-soft); border: 1px solid transparent; color: var(--accent);
   font-weight: 600; letter-spacing: .03em;
 }
+
+/* Subtarjetas dentro de una tarjeta */
+.subcards {
+  display: flex; flex-direction: column; gap: 10px;
+  border-top: 1px solid var(--border); padding-top: 12px;
+}
+.subcards-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.subcards-head b { font-size: 12.5px; font-weight: 600; color: var(--text); }
+.subcard-count {
+  font-size: 11px; color: var(--faint); background: var(--panel);
+  border: 1px solid var(--border); border-radius: 999px; padding: 1px 7px;
+}
+.subcard-list { display: flex; flex-direction: column; gap: 8px; }
+.subcard {
+  background: var(--panel-2); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 12px;
+  display: flex; flex-direction: column; gap: 9px;
+}
+.subcard:hover { border-color: var(--border-strong); }
+.subcard-head { display: flex; align-items: flex-start; gap: 8px; }
+.subcard-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.subcard-main b { font-size: 13px; font-weight: 600; }
+.subcard-main small { font-size: 12px; }
+.subcard-kv { grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); }
+.subcard-kv div { background: var(--panel); }
 
 /* Layout tipo masonry: posicionamiento absoluto calculado por la acción `masonry` */
 .masonry { position: relative; width: 100%; }

@@ -138,7 +138,7 @@
   margin: 0 auto;
   position: relative; z-index: 1;
 }
-.content.content-banner { padding-top: 0; display: flex; align-items: center; justify-content: center; }
+.content.content-banner { padding-top: 4vh; display: flex; align-items: center; justify-content: center; }
 /* Panel de notificaciones */
 .bell-wrap { position: relative; display: flex; align-items: center; }
 .bell-wrap .icon-btn { position: relative; }

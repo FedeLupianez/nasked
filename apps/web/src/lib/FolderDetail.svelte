@@ -3,27 +3,31 @@
   import CardItem from './CardItem.svelte';
   import CardForm from './CardForm.svelte';
   import { getDueInfo } from './utils';
-  import { masonry, isPositioned } from './masonry';
   import {
-    FolderOpen,
     Users,
-    KeyRound,
     ArrowLeft,
     Plus,
     LogOut,
-    CircleCheck,
-    Clock,
-    Flame,
-    Ban,
     UserPlus,
     UserX,
     UserCheck,
+    Search,
+    ArrowDownUp,
+    FileText,
+    ChevronRight,
+    Paperclip,
+    LayoutGrid,
+    List,
+    X,
   } from 'lucide-svelte';
 
   let showForm = $state(false);
   let sort: 'due' | 'recent' = $state('due');
   let showMemberManager = $state(false);
   let memberSelection = $state<string[]>([]);
+  let query = $state('');
+  let selectedCardId = $state<string | null>(null);
+  let layout: 'list' | 'grid' = $state('list');
 
   // usuarios de la empresa = rol USER
   let companyUsers = $derived(
@@ -70,76 +74,75 @@
   }
 
   let folder = $derived(store.selectedFolder);
+  let view = $derived(store.view);
+
+  let dueTodayCount = $derived.by(() => {
+    const now = new Date();
+    return (folder?.cards ?? []).filter(
+      (c) => new Date(c.dueDate).toDateString() === now.toDateString(),
+    ).length;
+  });
+
+  let subtitle = $derived(
+    dueTodayCount === 0
+      ? 'No hay vencimientos para hoy.'
+      : dueTodayCount === 1
+        ? 'Hay 1 vencimiento para hoy.'
+        : `Hay ${dueTodayCount} vencimientos para hoy.`,
+  );
+
   let cards = $derived.by(() => {
     if (!folder) return [];
     const arr = [...folder.cards];
     if (sort === 'due') arr.sort((a, b) => +new Date(a.dueDate) - +new Date(b.dueDate));
     else arr.sort((a, b) => +new Date(b.createdAt) - +new Date(a.createdAt));
-    const q = store.search.toLowerCase();
+    const q = query.trim().toLowerCase();
     if (!q) return arr;
-    return arr.filter((c) => c.title.toLowerCase().includes(q) || c.description.toLowerCase().includes(q));
-  });
-  let stats = $derived.by(() => {
-    const all = folder?.cards ?? [];
-    return {
-      ok: all.filter((c) => getDueInfo(c.dueDate).status === 'ok').length,
-      soon: all.filter((c) => getDueInfo(c.dueDate).status === 'soon').length,
-      urgent: all.filter((c) => getDueInfo(c.dueDate).status === 'urgent').length,
-      overdue: all.filter((c) => getDueInfo(c.dueDate).status === 'overdue').length
-    };
+    return arr.filter(
+      (c) =>
+        c.title.toLowerCase().includes(q) ||
+        c.description.toLowerCase().includes(q),
+    );
   });
 
-  let view = $derived(store.view);
-  /**
-   * Card a la que hay que hacer scroll. No es $state a proposito: se lee dentro
-   * del mismo $effect que la escribe, y si fuera reactivo el efecto se
-   * re-dispararia en loop reiniciando el scroll suave.
-   */
-  let pendingScrollId: string | null = null;
+  let recent = $derived(
+    cards.length
+      ? [...cards].sort(
+          (a, b) => +new Date(b.createdAt) - +new Date(a.createdAt),
+        )[0]
+      : null,
+  );
+
+  let selectedCard = $derived(
+    selectedCardId
+      ? (folder?.cards.find((c) => c.id === selectedCardId) ?? null)
+      : null,
+  );
+
+  function toggleSort() {
+    sort = sort === 'due' ? 'recent' : 'due';
+  }
+
+  function toggleLayout() {
+    layout = layout === 'list' ? 'grid' : 'list';
+  }
+
+  function openCard(id: string) {
+    selectedCardId = id;
+  }
+
+  function closeCard() {
+    selectedCardId = null;
+  }
 
   $effect(() => {
     const id = store.highlightCardId;
-    if (!id || view !== 'folder-detail') {
-      pendingScrollId = null;
-      return;
-    }
-    pendingScrollId = id;
-    probeTop = -1;
-    probeHits = 0;
-    scrollWhenPlaced(id);
+    if (!id || view !== 'folder-detail') return;
+    selectedCardId = id;
   });
-
-  /**
-   * Con posicionamiento absoluto las cards arrancan en top:0 recién montadas y
-   * masonry las va moviendo durante los primeros frames. Hay que esperar a que la
-   * posición se estabilice: si se scrollea mientras la card todavía se mueve, el
-   * navegador aborta el scroll suave en curso y nunca llega al destino.
-   *
-   * Se exigen STABLE_FRAMES frames seguidos con la misma posición porque al
-   * escribir el transform el rect recién se recalcula al frame siguiente: con un
-   * solo frame de confirmación el scroll se dispara contra la posición vieja.
-   */
-  const STABLE_FRAMES = 3;
-  let probeTop = -1;
-  let probeHits = 0;
-
-  function scrollWhenPlaced(id: string, frame = 0) {
-    if (pendingScrollId !== id) return;
-    const el = document.getElementById(`card-${id}`);
-    if (!el) return;
-    const top = Math.round(el.getBoundingClientRect().top);
-    probeHits = isPositioned(el) && top === probeTop ? probeHits + 1 : 0;
-    probeTop = top;
-    if (frame < 30 && probeHits < STABLE_FRAMES) {
-      requestAnimationFrame(() => scrollWhenPlaced(id, frame + 1));
-      return;
-    }
-    probeTop = -1;
-    probeHits = 0;
-    pendingScrollId = null;
-    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-  }
 </script>
+
+<svelte:window onkeydown={(e) => { if (e.key === 'Escape') closeCard(); }} />
 
 {#if !folder}
   <div class="panel">
@@ -148,52 +151,188 @@
     <button class="btn btn-ghost with-icon" onclick={() => (store.view = 'folders')}><ArrowLeft size={15} /> Ver carpetas</button>
   </div>
 {:else}
-  <div class="panel" style="border-left: 4px solid {folder.color}">
-    <div class="row">
-      <div class="grow">
-        <h3 class="with-icon panel-title"><FolderOpen size={18} /> {folder.name}</h3>
-        <p class="muted with-icon">{folder.description} · <Users size={12} /> {folder.memberIds.length} miembros</p>
+  <div class="folder-page">
+    <header class="folder-hero">
+      <h2>{folder.name}</h2>
+      <p>{subtitle}</p>
+    </header>
+
+    <div class="folder-search-row">
+      <div class="folder-search">
+        <Search size={18} />
+        <input
+          type="search"
+          placeholder={`Buscar tarjetas en ${folder.name}...`}
+          bind:value={query}
+        />
       </div>
-      <span class="folder-code with-icon"><KeyRound size={12} /> {folder.code}</span>
-      <select class="select" bind:value={sort}>
-        <option value="due">Orden: vencimiento</option>
-        <option value="recent">Orden: recientes</option>
-      </select>
-      {#if store.isAdmin}
-        <div class="row" style="gap: 8px;">
-          <button class="btn btn-primary btn-small with-icon" onclick={() => (showForm = true)}><Plus size={14} /> Nueva tarjeta</button>
-          <button class="btn btn-ghost btn-small with-icon" onclick={openMemberManager}><UserPlus size={14} /> Gestionar acceso</button>
-        </div>
-      {:else}
-        <button class="btn btn-ghost btn-small with-icon" onclick={() => store.leaveFolder(folder.id)}><LogOut size={13} /> Salir de la carpeta</button>
+      <div class="folder-actions">
+        <button
+          class="round-btn"
+          title={layout === 'list' ? 'Ver como cuadrícula' : 'Ver como lista'}
+          onclick={toggleLayout}
+        >
+          {#if layout === 'list'}<LayoutGrid size={17} />{:else}<List size={17} />{/if}
+        </button>
+        <button
+          class="round-btn"
+          title={sort === 'due' ? 'Ordenar por vencimiento' : 'Ordenar por recientes'}
+          onclick={toggleSort}
+        >
+          <ArrowDownUp size={17} />
+        </button>
+        {#if store.isAdmin}
+          <button class="round-btn" title="Gestionar acceso" onclick={openMemberManager}>
+            <UserPlus size={17} />
+          </button>
+          <button class="round-btn" title="Nueva tarjeta" onclick={() => (showForm = true)}>
+            <Plus size={18} />
+          </button>
+        {:else}
+          <button class="round-btn" title="Salir de la carpeta" onclick={() => store.leaveFolder(folder.id)}>
+            <LogOut size={16} />
+          </button>
+        {/if}
+      </div>
+    </div>
+
+    <hr class="folder-rule" />
+
+    {#if !cards.length}
+      <section class="folder-empty">
+        <svg class="folder-empty-art" width="230" height="120" viewBox="0 0 230 120" fill="none" aria-hidden="true">
+          <g stroke="currentColor" stroke-width="1.6" stroke-linejoin="round">
+            <path d="M14 52a7 7 0 0 1 7-7h24l9 10h33a7 7 0 0 1 7 7v31a7 7 0 0 1-7 7H21a7 7 0 0 1-7-7V52Z" opacity=".35" />
+            <path d="M62 40a7 7 0 0 1 7-7h24l9 10h33a7 7 0 0 1 7 7v43a7 7 0 0 1-7 7H69a7 7 0 0 1-7-7V40Z" opacity=".6" />
+            <path d="M110 28a7 7 0 0 1 7-7h24l9 10h33a7 7 0 0 1 7 7v55a7 7 0 0 1-7 7h-66a7 7 0 0 1-7-7V28Z" opacity=".9" />
+          </g>
+        </svg>
+        <p>
+          {#if query.trim()}
+            No encontramos coincidencias para “{query.trim()}”.
+          {:else}
+            Todavía no hay tarjetas en esta carpeta.
+          {/if}
+        </p>
+        {#if store.isAdmin && !query.trim()}
+          <button class="btn btn-primary btn-small with-icon" onclick={() => (showForm = true)}>
+            <Plus size={14} /> Nueva tarjeta
+          </button>
+        {/if}
+      </section>
+    {:else}
+      {#if recent}
+        <section class="folder-section">
+          <h3>Últimos subidos</h3>
+          {#if layout === 'grid'}
+            <div class="card-grid">
+              <button
+                class="card-tile"
+                class:active={selectedCardId === recent.id}
+                class:card-highlight={store.highlightCardId === recent.id}
+                onclick={() => openCard(recent.id)}
+              >
+                <span class="file-glyph"><FileText size={20} /></span>
+                <b>{recent.title}</b>
+                <small>{recent.description || 'Sin descripción'}</small>
+                <span class="tile-foot">
+                  <span class="due {getDueInfo(recent.dueDate).status}">{getDueInfo(recent.dueDate).short}</span>
+                  {#if recent.attachments?.length}
+                    <span class="file-count with-icon">
+                      <Paperclip size={12} /> {recent.attachments.length}
+                    </span>
+                  {/if}
+                </span>
+              </button>
+            </div>
+          {:else}
+            <button class="recent-file-card" onclick={() => openCard(recent.id)}>
+              <span class="file-glyph"><FileText size={22} /></span>
+              <span class="recent-file-main">
+                <b>{recent.title}</b>
+                <small>{folder.code} · {recent.description || 'Sin descripción'}</small>
+              </span>
+              <span class="due {getDueInfo(recent.dueDate).status}">{getDueInfo(recent.dueDate).short}</span>
+            </button>
+          {/if}
+        </section>
       {/if}
-    </div>
-    <div class="stats">
-      <div class="stat"><small class="with-icon"><CircleCheck size={13} /> En tiempo</small><b>{stats.ok}</b></div>
-      <div class="stat"><small class="with-icon"><Clock size={13} /> Pronto (&lt;72h)</small><b>{stats.soon}</b></div>
-      <div class="stat"><small class="with-icon"><Flame size={13} /> Urgente (&lt;24h)</small><b>{stats.urgent}</b></div>
-      <div class="stat"><small class="with-icon"><Ban size={13} /> Vencidas</small><b>{stats.overdue}</b></div>
-    </div>
+
+      <section class="folder-section">
+        <h3>Todas las tarjetas <span class="count">{cards.length}</span></h3>
+        {#if layout === 'grid'}
+          <div class="card-grid">
+            {#each cards as c (c.id)}
+              <button
+                class="card-tile"
+                class:active={selectedCardId === c.id}
+                class:card-highlight={store.highlightCardId === c.id}
+                onclick={() => openCard(c.id)}
+              >
+                <span class="file-glyph"><FileText size={20} /></span>
+                <b>{c.title}</b>
+                <small>{c.description || 'Sin descripción'}</small>
+                <span class="tile-foot">
+                  <span class="due {getDueInfo(c.dueDate).status}">{getDueInfo(c.dueDate).short}</span>
+                  {#if c.attachments?.length}
+                    <span class="file-count with-icon">
+                      <Paperclip size={12} /> {c.attachments.length}
+                    </span>
+                  {/if}
+                </span>
+              </button>
+            {/each}
+          </div>
+        {:else}
+          <div class="file-list">
+            {#each cards as c (c.id)}
+              <div
+                class="file-entry"
+                class:card-highlight={store.highlightCardId === c.id}
+              >
+                <button
+                  class="file-row"
+                  onclick={() => openCard(c.id)}
+                >
+                  <span class="file-glyph small"><FileText size={17} /></span>
+                  <span class="file-row-main">
+                    <b>{c.title}</b>
+                    <small>{c.description || 'Sin descripción'}</small>
+                  </span>
+                  <span class="file-row-meta">
+                    <span class="due {getDueInfo(c.dueDate).status}">{getDueInfo(c.dueDate).short}</span>
+                    {#if c.attachments?.length}
+                      <span class="file-count with-icon">
+                        <Paperclip size={12} /> {c.attachments.length}
+                      </span>
+                    {/if}
+                  </span>
+                  <ChevronRight size={16} class="chev" />
+                </button>
+              </div>
+            {/each}
+          </div>
+        {/if}
+      </section>
+    {/if}
   </div>
 
-  <div class="mt16"></div>
-
-  {#if !cards.length}
-    <div class="panel">
-      <h3>Sin tarjetas</h3>
-      <p class="muted">
-        {#if store.isAdmin} Crea la primera actividad con fecha de vencimiento y campos infinitos.
-        {:else} Aún no hay actividades en esta carpeta. Vuelve pronto.
-        {/if}
-      </p>
-    </div>
-  {:else}
-    <div class="masonry" use:masonry={{ minColWidth: 300, colGap: 16, rowGap: 16 }}>
-      {#each cards as c (c.id)}
-        <div id={`card-${c.id}`} class:card-highlight={store.highlightCardId === c.id}>
-          <CardItem card={c} folderId={folder.id} />
-        </div>
-      {/each}
+  {#if selectedCard}
+    <div
+      class="modal-back"
+      onclick={(e) => { if (e.target === e.currentTarget) closeCard(); }}
+      role="dialog"
+      aria-modal="true"
+      aria-label="Detalle de tarjeta"
+      tabindex="-1"
+    >
+      <div class="modal card-modal">
+        <header class="card-modal-head">
+          <span class="card-modal-kicker with-icon"><FileText size={15} /> Detalle de tarjeta</span>
+          <button class="icon-btn" onclick={closeCard} aria-label="Cerrar"><X size={18} /></button>
+        </header>
+        <CardItem card={selectedCard} folderId={folder.id} />
+      </div>
     </div>
   {/if}
 
@@ -244,3 +383,313 @@
     </div>
   {/if}
 {/if}
+
+<style>
+  .folder-page {
+    width: 100%;
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 0 8px 48px;
+    box-sizing: border-box;
+  }
+
+  .folder-hero {
+    text-align: center;
+    padding: 28px 0 32px;
+  }
+  .folder-hero h2 {
+    margin: 0;
+    font-size: 30px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+  }
+  .folder-hero p {
+    margin: 8px 0 0;
+    color: var(--muted);
+    font-size: 14px;
+  }
+
+  .folder-search-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .folder-search {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 11px 18px;
+    transition: border-color .16s ease, box-shadow .16s ease;
+  }
+  .folder-search:focus-within {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-soft);
+  }
+  .folder-search :global(svg) { color: var(--muted); flex-shrink: 0; }
+  .folder-search input {
+    flex: 1;
+    min-width: 0;
+    background: transparent;
+    border: 0;
+    outline: none;
+    color: var(--text);
+    font-size: 14.5px;
+    font-family: inherit;
+  }
+  .folder-search input::placeholder { color: var(--faint); }
+
+  .folder-actions {
+    display: flex;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+  .round-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    background: var(--panel);
+    color: var(--muted);
+    border: 1px solid var(--border);
+    cursor: pointer;
+    transition: color .16s ease, border-color .16s ease, background .16s ease;
+  }
+  .round-btn:hover {
+    color: var(--text);
+    border-color: var(--border-strong);
+    background: var(--panel-2);
+  }
+
+  .folder-rule {
+    border: 0;
+    border-top: 1px solid var(--border);
+    margin: 18px 0 28px;
+  }
+
+  .folder-section { margin-bottom: 30px; }
+  .folder-section > h3 {
+    margin: 0 0 14px;
+    font-size: 17px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+  .folder-section .count {
+    color: var(--faint);
+    font-weight: 400;
+    margin-left: 6px;
+  }
+
+  .recent-file-card {
+    width: 100%;
+    text-align: left;
+    font-family: inherit;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 26px 24px;
+    cursor: pointer;
+    color: var(--text);
+    transition: border-color .16s ease, box-shadow .16s ease, transform .16s ease;
+  }
+  .recent-file-card:hover {
+    border-color: var(--border-strong);
+    box-shadow: var(--shadow-1);
+    transform: translateY(-1px);
+  }
+  .recent-file-main {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+  .recent-file-main b { font-size: 16px; font-weight: 600; }
+  .recent-file-main small {
+    font-size: 13px;
+    color: var(--faint);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .file-glyph {
+    width: 46px;
+    height: 46px;
+    border-radius: var(--radius-sm);
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    color: var(--muted);
+  }
+  .file-glyph.small { width: 34px; height: 34px; }
+  .file-glyph :global(svg) { display: block; }
+
+  .file-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .file-entry { border-radius: var(--radius); }
+  .file-row {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 12px 16px;
+    cursor: pointer;
+    color: var(--text);
+    font-family: inherit;
+    text-align: left;
+    transition: border-color .16s ease, background .16s ease;
+  }
+  .file-row:hover {
+    border-color: var(--border-strong);
+    background: var(--panel-2);
+  }
+  .file-row-main {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .file-row-main b { font-size: 14.5px; font-weight: 600; }
+  .file-row-main small {
+    font-size: 12.5px;
+    color: var(--faint);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .file-row-meta {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+  }
+  .file-row-meta :global(.due) { white-space: nowrap; }
+  .file-count { font-size: 12px; color: var(--faint); }
+  .chev {
+    color: var(--faint);
+    flex-shrink: 0;
+  }
+
+  .card-modal {
+    width: 620px;
+  }
+  .card-modal-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+  .card-modal-kicker {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: var(--faint);
+  }
+
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+    gap: 12px;
+  }
+  .card-tile {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    min-height: 160px;
+    padding: 16px;
+    text-align: left;
+    color: var(--text);
+    font-family: inherit;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: border-color .16s ease, background .16s ease,
+      box-shadow .16s ease, transform .16s ease;
+  }
+  .card-tile:hover {
+    border-color: var(--border-strong);
+    background: var(--panel-2);
+    box-shadow: var(--shadow-1);
+    transform: translateY(-1px);
+  }
+  .card-tile.active {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-soft);
+  }
+  .card-tile b {
+    font-size: 14px;
+    font-weight: 600;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .card-tile small {
+    font-size: 12.5px;
+    color: var(--faint);
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .tile-foot {
+    width: 100%;
+    margin-top: auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .tile-foot :global(.due) {
+    font-size: 11px;
+    padding: 4px 8px;
+  }
+
+  .folder-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    padding: 48px 24px 60px;
+    text-align: center;
+  }
+  .folder-empty p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 14px;
+  }
+  .folder-empty-art {
+    color: var(--faint);
+    opacity: .7;
+  }
+
+  @media (max-width: 640px) {
+    .folder-hero h2 { font-size: 24px; }
+    .folder-search-row { flex-wrap: wrap; }
+    .folder-search { flex-basis: 100%; }
+    .folder-actions { margin-left: auto; }
+    .file-row-meta :global(.due) { display: none; }
+  }
+</style>
